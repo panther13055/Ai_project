@@ -55,7 +55,7 @@ function updateTarget(){
 function renderCases(){
   const grid=$('#casesGrid'); const arr=storedCases().slice().reverse();
   if(!arr.length){ grid.innerHTML='<div class="empty-cases">No cases yet. Register an item above to create your first recovery case.</div>'; return; }
-  grid.innerHTML=arr.slice(0,6).map(c=>`<article class="case-card"><div class="case-card-top"><span class="case-num">${c.id}</span><span class="case-status">ACTIVE</span></div><h3>${c.color} ${c.category}</h3><p>${c.details || 'No distinctive details added.'}</p><div class="case-meta"><span>${c.location}</span><span>${new Date(c.created).toLocaleDateString()}</span></div></article>`).join('');
+  grid.innerHTML=arr.slice(0,6).map(c=>`<article class="case-card"><div class="case-card-top"><span class="case-num">${c.id}</span><span class="case-status">${c.lastSighting?'MATCH SEEN':'ACTIVE'}</span></div><h3>${c.color} ${c.category}</h3><p>${c.details || 'No distinctive details added.'}</p><div class="case-meta"><span>${c.lastSighting?'Last match '+new Date(c.lastSighting.at).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}):c.location}</span><span>${c.lastSighting?c.lastSighting.confidence+'% confidence':new Date(c.created).toLocaleDateString()}</span></div></article>`).join('');
 }
 
 $('#caseForm').addEventListener('submit',e=>{
@@ -117,7 +117,7 @@ function stopCamera(){
 
 $('#imageUpload').addEventListener('change',async e=>{
   const file=e.target.files[0]; if(!file)return; stopCamera(); await ensureModel();
-  img.src=URL.createObjectURL(file); img.onload=async()=>{img.style.display='block';video.style.display='none';emptyState.style.display='none';$('#feedLabel').textContent=file.name;await detectOnce(img);};
+  img.src=URL.createObjectURL(file); img.onload=async()=>{img.style.display='block';video.style.display='none';emptyState.style.display='none';$('#feedLabel').textContent=file.name;setAgent('ANALYZING','Analyzing the uploaded image against the active target.',['Single-image analysis','Category matching','Color estimation']);await detectOnce(img,true);};
 });
 
 async function detectLoop(){
@@ -147,12 +147,12 @@ function categoryMatches(predClass,target){
   return (synonyms[target]||[target]).includes(predClass);
 }
 
-async function detectOnce(source){
+async function detectOnce(source,singleImage=false){
   if(!sizeCanvas(source))return;
   ctx.clearRect(0,0,canvas.width,canvas.height);
   let preds=[];
-  if(model){ try{preds=await model.detect(source,20,.35);}catch(e){console.error(e)} }
-  drawPredictions(source,preds);
+  if(model){ try{preds=await model.detect(source,20,.38);}catch(e){console.error(e);setAgent('AI ERROR','Detection failed. Retry the scan.',['Model still loaded','Retry recommended']);} }
+  drawPredictions(source,preds,singleImage);
 }
 
 function recordSighting(confidence,color){
@@ -162,20 +162,20 @@ function recordSighting(confidence,color){
   arr[idx].sightings=[...(arr[idx].sightings||[]),sighting].slice(-10); arr[idx].lastSighting=sighting;
   saveCases(arr); lastSightingAt=now; renderCases();
 }
-function drawPredictions(source,preds){
+function drawPredictions(source,preds,singleImage=false){
   const c=currentCase(); const targetCat=c?.category||'backpack'; const targetColor=c?.color||'black';
   let best=null;
   preds.forEach(p=>{
     const [x,y,w,h]=p.bbox; const detectedColor=getDominantColor(source,p.bbox); const classHit=categoryMatches(p.class,targetCat); const colorHit=detectedColor===targetColor;
     const match=Math.min(99,Math.round((p.score*75)+(classHit?18:0)+(colorHit?7:0)));
-    const isTarget=classHit; if(!best|| (isTarget?match:Math.round(p.score*100)) > best.score) best={...p,score:isTarget?match:Math.round(p.score*100),color:detectedColor,isTarget};
+    const isTarget=classHit; if(!best|| (isTarget&&!best.isTarget) || (isTarget===best.isTarget && (isTarget?match:Math.round(p.score*100)) > best.score)) best={...p,score:isTarget?match:Math.round(p.score*100),color:detectedColor,isTarget,colorHit};
     ctx.strokeStyle=isTarget?'#69f0d0':'#65bfff'; ctx.lineWidth=Math.max(2,canvas.width/520); ctx.strokeRect(x,y,w,h);
     const label=`${p.class} · ${Math.round(p.score*100)}%${isTarget?` · ${detectedColor}`:''}`; ctx.font=`600 ${Math.max(12,canvas.width/70)}px DM Sans, sans-serif`; const tw=ctx.measureText(label).width+16; const lh=Math.max(24,canvas.width/38); ctx.fillStyle=isTarget?'#69f0d0':'#65bfff'; ctx.fillRect(x,Math.max(0,y-lh),tw,lh); ctx.fillStyle='#071019'; ctx.fillText(label,x+8,Math.max(16,y-7));
   });
   $('#objectCount').textContent=preds.length;
   const rs=$('#resultState');
   if(best?.isTarget){
-    consecutiveMatches=Math.min(VERIFY_FRAMES,consecutiveMatches+1);
+    consecutiveMatches=singleImage?VERIFY_FRAMES:Math.min(VERIFY_FRAMES,consecutiveMatches+1);
     $('#verificationCount').textContent=consecutiveMatches+' / '+VERIFY_FRAMES;
     $('#bestMatch').textContent=pretty(best.class); $('#matchConfidence').textContent=best.score+'%';
     if(consecutiveMatches>=VERIFY_FRAMES){
@@ -203,7 +203,7 @@ $('#demoButton').addEventListener('click',()=>{
   // draw fake scene shapes
   ctx.fillStyle='#10141b';ctx.fillRect(250,210,340,350);ctx.fillStyle='#29727c';ctx.fillRect(930,285,70,245);
   fake.forEach((p,i)=>{const [x,y,w,h]=p.bbox;ctx.strokeStyle=i===0?'#69f0d0':'#65bfff';ctx.lineWidth=4;ctx.strokeRect(x,y,w,h);const label=`${p.class} · ${Math.round(p.score*100)}%`;ctx.font='600 24px DM Sans';const tw=ctx.measureText(label).width+22;ctx.fillStyle=i===0?'#69f0d0':'#65bfff';ctx.fillRect(x,y-38,tw,38);ctx.fillStyle='#071019';ctx.fillText(label,x+11,y-12)});
-  $('#feedLabel').textContent='Demo scene · simulated detections';$('#objectCount').textContent='2';$('#bestMatch').textContent=pretty(target);$('#matchConfidence').textContent='92%';const rs=$('#resultState');rs.className='result-state good';rs.querySelector('strong').textContent='Potential match found';toast('Demo mode running');
+  $('#feedLabel').textContent='Demo scene · simulated detections';$('#objectCount').textContent='2';$('#bestMatch').textContent=pretty(target);$('#matchConfidence').textContent='92%';$('#verificationCount').textContent=VERIFY_FRAMES+' / '+VERIFY_FRAMES;const rs=$('#resultState');rs.className='result-state good';rs.querySelector('strong').textContent='Demo match verified';setAgent('DEMO VERIFIED','Demo mode simulated a stable match. Live mode uses the real object-detection model.',['Simulated category match','92% demo confidence','Presentation fallback']);toast('Demo mode running');
 });
 
 const io=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')}),{threshold:.12}); $$('.reveal').forEach(el=>io.observe(el));
