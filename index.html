@@ -113,6 +113,13 @@
             </select>
           </label>
           <label class="field field-wide"><span>Distinctive details</span><input id="itemDetails" placeholder="e.g. Nike logo, silver zip, keychain on left strap" /></label>
+          <label class="field field-wide"><span>Reference photo <small style="color:#64748b;font-weight:500">recommended for exact visual matching</small></span>
+            <input id="referenceImage" type="file" accept="image/*" />
+          </label>
+          <div class="field field-wide reference-preview" id="referencePreview">
+            <span>Visual match</span>
+            <div class="reference-state"><div class="reference-thumb" id="referenceThumb"></div><div><strong id="referenceStatus">No reference image</strong><small id="referenceHint">Add a clear photo of the actual item for stronger matching.</small></div></div>
+          </div>
           <label class="field field-wide"><span>Last seen</span><input id="lastSeen" placeholder="e.g. Computer Lab 4, 2nd floor" required /></label>
         </div>
         <div class="form-foot">
@@ -144,7 +151,7 @@
 
           <div class="model-block">
             <div class="model-row"><span>Detection model</span><b>COCO-SSD</b></div>
-            <div class="model-row"><span>Agent logic</span><b>Class + color + stability</b></div>
+            <div class="model-row"><span>Agent logic</span><b>Class + color + visual similarity</b></div>
             <div class="model-row"><span>Verification</span><b>Multi-frame</b></div>
             <div class="model-row"><span>Privacy</span><b>On-device</b></div>
           </div>
@@ -180,6 +187,7 @@
             <div class="metric"><span>Objects found</span><strong id="objectCount">0</strong></div>
             <div class="metric"><span>Best match</span><strong id="bestMatch">—</strong></div>
             <div class="metric"><span>Confidence</span><strong id="matchConfidence">—</strong></div>
+            <div class="metric"><span>Visual similarity</span><strong id="visualSimilarity">—</strong></div>
             <div class="metric"><span>Verification</span><strong id="verificationCount">0 / 3</strong></div>
             <div class="result-state" id="resultState"><span class="result-dot"></span><div><small>STATUS</small><strong>Awaiting scan</strong></div></div>
           </div>
@@ -222,6 +230,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.1"></script>
   <script src="app.js"></script>
 </body>
 </html>
