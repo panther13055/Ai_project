@@ -210,7 +210,7 @@ async function detectOnce(source,singleImage=false){
   ctx.clearRect(0,0,canvas.width,canvas.height);
   let preds=[];
   if(model){ try{preds=await model.detect(source,20,.38);}catch(e){console.error(e);setAgent('AI ERROR','Detection failed. Retry the scan.',['Model still loaded','Retry recommended']);} }
-  drawPredictions(source,preds,singleImage);
+  await drawPredictions(source,preds,singleImage);
 }
 
 function recordSighting(confidence,color){
@@ -225,7 +225,7 @@ function recordSighting(confidence,color){
       .catch(err=>{ console.warn('Sighting cloud sync failed',err); toast('Sighting saved locally; cloud sync unavailable'); });
   }
 }
-function drawPredictions(source,preds,singleImage=false){
+async function drawPredictions(source,preds,singleImage=false){
   const c=currentCase(); const targetCat=c?.category||'backpack'; const targetColor=c?.color||'black';
   let best=null;
   preds.forEach(p=>{
@@ -237,25 +237,36 @@ function drawPredictions(source,preds,singleImage=false){
   });
   $('#objectCount').textContent=preds.length;
   const rs=$('#resultState');
+  let visualSimilarity=null;
+  if(best?.isTarget && c?.reference_embedding && (singleImage || consecutiveMatches>=1)){
+    try{
+      const crop=cropToCanvas(source,best.bbox);
+      const emb=await embeddingFromElement(crop);
+      const cos=cosineSimilarity(c.reference_embedding,emb);
+      visualSimilarity=cos===null?null:Math.max(0,Math.min(100,Math.round(cos*100)));
+    }catch(err){ console.warn('Visual similarity failed',err); }
+  }
+  $('#visualSimilarity').textContent=visualSimilarity===null?'—':visualSimilarity+'%';
   if(best?.isTarget){
     consecutiveMatches=singleImage?VERIFY_FRAMES:Math.min(VERIFY_FRAMES,consecutiveMatches+1);
     $('#verificationCount').textContent=consecutiveMatches+' / '+VERIFY_FRAMES;
+    if(visualSimilarity!==null) best.score=Math.max(1,Math.min(99,Math.round(best.score*0.62+visualSimilarity*0.38)));
     $('#bestMatch').textContent=pretty(best.class); $('#matchConfidence').textContent=best.score+'%';
     if(consecutiveMatches>=VERIFY_FRAMES){
       rs.className='result-state good'; rs.querySelector('strong').textContent='Verified potential match';
-      setAgent('MATCH VERIFIED','Repeated detections confirm a likely '+pretty(targetCat)+'. Review the item before marking it recovered.',[best.colorHit?'Color matched: '+pretty(targetColor):'Color estimate: '+pretty(best.color),'Repeated visual confirmation',best.score+'% match score']);
+      setAgent('MATCH VERIFIED','Repeated detections confirm a likely '+pretty(targetCat)+'. This is a candidate match, not proof of exact identity; review it before recovery.',[best.colorHit?'Color matched: '+pretty(targetColor):'Color estimate: '+pretty(best.color),visualSimilarity!==null?'Visual similarity: '+visualSimilarity+'%':'No reference photo','Repeated visual confirmation',best.score+'% combined score']);
       recordSighting(best.score,best.color); if(navigator.vibrate) navigator.vibrate([80,50,80]);
     } else {
       rs.className='result-state warn'; rs.querySelector('strong').textContent='Verifying candidate';
-      setAgent('VERIFYING','Possible '+pretty(targetCat)+' detected. Waiting for '+(VERIFY_FRAMES-consecutiveMatches)+' more stable confirmation(s).',['Category match','Temporal verification running']);
+      setAgent('VERIFYING','Possible '+pretty(targetCat)+' detected. Waiting for '+(VERIFY_FRAMES-consecutiveMatches)+' more stable confirmation(s).',['Category match',visualSimilarity!==null?'Visual similarity: '+visualSimilarity+'%':'Reference similarity pending','Temporal verification running']);
     }
   } else if(best){
     consecutiveMatches=Math.max(0,consecutiveMatches-1); $('#verificationCount').textContent=consecutiveMatches+' / '+VERIFY_FRAMES;
-    $('#bestMatch').textContent=pretty(best.class); $('#matchConfidence').textContent=best.score+'%'; rs.className='result-state warn'; rs.querySelector('strong').textContent='Other objects detected';
+    $('#visualSimilarity').textContent='—'; $('#bestMatch').textContent=pretty(best.class); $('#matchConfidence').textContent=best.score+'%'; rs.className='result-state warn'; rs.querySelector('strong').textContent='Other objects detected';
     setAgent('SCANNING','Detected '+pretty(best.class)+', but the active target is '+pretty(targetCat)+'.',['Continuing search','No false match confirmed']);
   } else {
     consecutiveMatches=0; $('#verificationCount').textContent='0 / '+VERIFY_FRAMES;
-    $('#bestMatch').textContent='—'; $('#matchConfidence').textContent='—'; rs.className='result-state'; rs.querySelector('strong').textContent='No objects yet';
+    $('#visualSimilarity').textContent='—'; $('#bestMatch').textContent='—'; $('#matchConfidence').textContent='—'; rs.className='result-state'; rs.querySelector('strong').textContent='No objects yet';
     if(running) setAgent('SCANNING','No target visible yet. Keep the item centered, well lit and unobstructed.',['Good lighting helps','Keep target in frame']);
   }
 }
@@ -266,7 +277,7 @@ $('#demoButton').addEventListener('click',()=>{
   // draw fake scene shapes
   ctx.fillStyle='#10141b';ctx.fillRect(250,210,340,350);ctx.fillStyle='#29727c';ctx.fillRect(930,285,70,245);
   fake.forEach((p,i)=>{const [x,y,w,h]=p.bbox;ctx.strokeStyle=i===0?'#69f0d0':'#65bfff';ctx.lineWidth=4;ctx.strokeRect(x,y,w,h);const label=`${p.class} · ${Math.round(p.score*100)}%`;ctx.font='600 24px DM Sans';const tw=ctx.measureText(label).width+22;ctx.fillStyle=i===0?'#69f0d0':'#65bfff';ctx.fillRect(x,y-38,tw,38);ctx.fillStyle='#071019';ctx.fillText(label,x+11,y-12)});
-  $('#feedLabel').textContent='Demo scene · simulated detections';$('#objectCount').textContent='2';$('#bestMatch').textContent=pretty(target);$('#matchConfidence').textContent='92%';$('#verificationCount').textContent=VERIFY_FRAMES+' / '+VERIFY_FRAMES;const rs=$('#resultState');rs.className='result-state good';rs.querySelector('strong').textContent='Demo match verified';setAgent('DEMO VERIFIED','Demo mode simulated a stable match. Live mode uses the real object-detection model.',['Simulated category match','92% demo confidence','Presentation fallback']);toast('Demo mode running');
+  $('#feedLabel').textContent='Demo scene · simulated detections';$('#objectCount').textContent='2';$('#bestMatch').textContent=pretty(target);$('#matchConfidence').textContent='92%';$('#visualSimilarity').textContent=currentCase()?.reference_embedding?'88%':'—';$('#verificationCount').textContent=VERIFY_FRAMES+' / '+VERIFY_FRAMES;const rs=$('#resultState');rs.className='result-state good';rs.querySelector('strong').textContent='Demo match verified';setAgent('DEMO VERIFIED','Demo mode simulated a stable match. Live mode uses the real object-detection model.',['Simulated category match','92% demo confidence','Presentation fallback']);toast('Demo mode running');
 });
 
 const io=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')}),{threshold:.12}); $$('.reveal').forEach(el=>io.observe(el));
