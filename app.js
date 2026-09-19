@@ -1,4 +1,6 @@
 let model = null;
+let similarityModel = null;
+let pendingReferenceEmbedding = null;
 let stream = null;
 let running = false;
 let activeMode = 'camera';
@@ -52,6 +54,10 @@ function currentCase(){ const arr=storedCases(); return arr[arr.length-1] || nul
 function cloudToLocal(row){ const sightings=(row.sightings||[]).slice().sort((a,b)=>new Date(a.created_at)-new Date(b.created_at)); const last=sightings[sightings.length-1]; return {id:row.case_code,cloud_id:row.id,category:row.category,color:row.color,details:row.details||'',location:row.last_seen_location,created:new Date(row.created_at).getTime(),status:row.status,sightings:sightings.map(s=>({at:new Date(s.created_at).getTime(),confidence:s.confidence,color:s.detected_color,source:s.source})),lastSighting:last?{at:new Date(last.created_at).getTime(),confidence:last.confidence,color:last.detected_color,source:last.source}:undefined}; }
 async function syncFromCloud(){ try{ const data=await cloudCall({action:'list_cases'}); const remote=(data.cases||[]).map(cloudToLocal).sort((a,b)=>a.created-b.created); if(remote.length){ saveCases(remote); renderCases(); updateTarget(); } return true; }catch(err){ console.warn('Cloud sync unavailable',err); return false; } }
 function pretty(s){ return (s||'').replace(/\b\w/g,c=>c.toUpperCase()); }
+async function ensureSimilarityModel(){ if(similarityModel) return similarityModel; await tf.ready(); similarityModel=await mobilenet.load({version:2,alpha:0.5}); return similarityModel; }
+async function embeddingFromElement(el){ const m=await ensureSimilarityModel(); const t=m.infer(el,true); const v=Array.from(await t.data()); t.dispose(); return v; }
+function cosineSimilarity(a,b){ if(!a||!b||a.length!==b.length||!a.length)return null; let d=0,aa=0,bb=0; for(let i=0;i<a.length;i++){d+=a[i]*b[i];aa+=a[i]*a[i];bb+=b[i]*b[i];} return aa&&bb?d/(Math.sqrt(aa)*Math.sqrt(bb)):null; }
+function cropToCanvas(source,bbox){ const [x,y,w,h]=bbox; const out=document.createElement('canvas'); out.width=224; out.height=224; out.getContext('2d').drawImage(source,x,y,w,h,0,0,224,224); return out; }
 
 function setAgent(state,message,reasons=[]){
   const stateEl=$('#agentState'), msg=$('#agentMessage'), list=$('#agentReasons');
