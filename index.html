@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#070B14" />
+  <title>OrbitFind AI — Smart Lost & Found</title>
+  <meta name="description" content="AI-powered lost & found prototype with live camera and image scanning." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="noise"></div>
+  <div class="aurora aurora-a"></div>
+  <div class="aurora aurora-b"></div>
+
+  <header class="topbar">
+    <a class="brand" href="#home" aria-label="OrbitFind AI home">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 44 44" fill="none"><path d="M22 5.5c8.95 0 16.2 7.25 16.2 16.2S30.95 37.9 22 37.9 5.8 30.65 5.8 21.7 13.05 5.5 22 5.5Z" stroke="currentColor" stroke-width="1.5" opacity=".55"/><path d="M31.5 15.1c2.35 2.35 2.35 6.15 0 8.5L23.6 31.5c-2.35 2.35-6.15 2.35-8.5 0s-2.35-6.15 0-8.5l7.9-7.9c2.35-2.35 6.15-2.35 8.5 0Z" fill="currentColor" opacity=".9"/><circle cx="13.7" cy="13.7" r="2.7" fill="currentColor"/></svg>
+      </span>
+      <span><strong>OrbitFind</strong><em>AI</em></span>
+    </a>
+    <nav class="nav" aria-label="Primary navigation">
+      <a href="#home" class="nav-link active">Overview</a>
+      <a href="#register" class="nav-link">Register</a>
+      <a href="#scanner" class="nav-link">AI Scanner</a>
+      <a href="#cases" class="nav-link">Cases</a>
+    </nav>
+    <div class="top-actions">
+      <div class="status-chip"><span class="live-dot"></span><span id="modelStatus">AI standby</span></div>
+      <button class="icon-btn" id="menuButton" aria-label="Open menu">☰</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero section" id="home">
+      <div class="hero-copy reveal">
+        <div class="eyebrow"><span class="eyebrow-dot"></span> Computer Vision · Smart Recovery</div>
+        <h1>Find what’s lost.<br><span>Before it disappears.</span></h1>
+        <p class="hero-lead">OrbitFind uses real-time object detection, visual matching and contextual filters to turn any phone camera into an AI-powered lost-item scanner.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#scanner">Start AI scan <span>↗</span></a>
+          <a class="btn btn-secondary" href="#register">Register an item</a>
+        </div>
+        <div class="proof-row">
+          <div><strong>80+</strong><span>COCO object classes</span></div>
+          <div><strong>Live</strong><span>phone camera mode</span></div>
+          <div><strong>Local</strong><span>privacy-first processing</span></div>
+        </div>
+      </div>
+
+      <div class="hero-visual reveal reveal-delay">
+        <div class="scanner-shell">
+          <div class="scanner-topline"><span>LIVE VISION</span><span class="tiny-status">● READY</span></div>
+          <div class="mock-frame">
+            <div class="mock-grid"></div>
+            <div class="scene scene-bag"></div>
+            <div class="scene scene-bottle"></div>
+            <div class="scan-line"></div>
+            <div class="detect-box box-bag"><span>backpack</span><b>92%</b></div>
+            <div class="detect-box box-bottle"><span>bottle</span><b>88%</b></div>
+            <div class="crosshair">+</div>
+          </div>
+          <div class="scanner-footer">
+            <div><span class="meta-label">Target</span><strong>Black backpack</strong></div>
+            <div class="confidence"><span>Match confidence</span><strong>91%</strong><div class="bar"><i style="width:91%"></i></div></div>
+          </div>
+        </div>
+        <div class="float-card fc-1"><span class="mini-icon">◎</span><div><small>Potential match</small><b>Corridor · 11:42 AM</b></div></div>
+        <div class="float-card fc-2"><span class="mini-icon">✦</span><div><small>AI model</small><b>COCO-SSD ready</b></div></div>
+      </div>
+    </section>
+
+    <section class="ticker" aria-label="Capabilities">
+      <div class="ticker-track">
+        <span>OBJECT DETECTION</span><i>◆</i><span>COLOR MATCHING</span><i>◆</i><span>PHONE CAMERA</span><i>◆</i><span>IMAGE SCAN</span><i>◆</i><span>CASE HISTORY</span><i>◆</i><span>LOCAL PROCESSING</span><i>◆</i>
+        <span>OBJECT DETECTION</span><i>◆</i><span>COLOR MATCHING</span><i>◆</i><span>PHONE CAMERA</span><i>◆</i><span>IMAGE SCAN</span><i>◆</i><span>CASE HISTORY</span><i>◆</i><span>LOCAL PROCESSING</span><i>◆</i>
+      </div>
+    </section>
+
+    <section class="section split-section" id="register">
+      <div class="section-heading reveal">
+        <div class="eyebrow">01 · Register a case</div>
+        <h2>Tell the AI what<br>you’re looking for.</h2>
+        <p>A compact case profile gives the scanner a target: category, color, description and last-seen location.</p>
+      </div>
+
+      <form class="premium-card case-form reveal" id="caseForm">
+        <div class="form-head">
+          <div><span class="step-chip">Step 01</span><h3>Lost item profile</h3></div>
+          <span class="autosave">● Auto-saved locally</span>
+        </div>
+        <div class="field-grid">
+          <label class="field"><span>Item category</span>
+            <select id="itemCategory" required>
+              <option value="backpack">Backpack</option>
+              <option value="bottle">Bottle</option>
+              <option value="umbrella">Umbrella</option>
+              <option value="handbag">Handbag</option>
+              <option value="suitcase">Suitcase</option>
+              <option value="laptop">Laptop</option>
+              <option value="cell phone">Phone</option>
+              <option value="book">Book</option>
+              <option value="sports ball">Sports item</option>
+            </select>
+          </label>
+          <label class="field"><span>Primary color</span>
+            <select id="itemColor" required>
+              <option value="black">Black</option><option value="white">White</option><option value="blue">Blue</option><option value="red">Red</option><option value="green">Green</option><option value="yellow">Yellow</option><option value="brown">Brown</option><option value="gray">Gray</option><option value="orange">Orange</option><option value="purple">Purple</option>
+            </select>
+          </label>
+          <label class="field field-wide"><span>Distinctive details</span><input id="itemDetails" placeholder="e.g. Nike logo, silver zip, keychain on left strap" /></label>
+          <label class="field field-wide"><span>Last seen</span><input id="lastSeen" placeholder="e.g. Computer Lab 4, 2nd floor" required /></label>
+        </div>
+        <div class="form-foot">
+          <div class="case-id">CASE ID <strong id="caseIdPreview">OF-2401</strong></div>
+          <button class="btn btn-primary" type="submit">Save & scan item <span>→</span></button>
+        </div>
+      </form>
+    </section>
+
+    <section class="section scanner-section" id="scanner">
+      <div class="section-heading centered reveal">
+        <div class="eyebrow">02 · AI Scanner</div>
+        <h2>Use your phone camera.<br><span>No extra hardware.</span></h2>
+        <p>Open this deployed site directly on your phone and tap Live Camera. The rear camera becomes the detection feed.</p>
+      </div>
+
+      <div class="scanner-layout reveal">
+        <aside class="scan-panel premium-card">
+          <div class="panel-kicker">SCAN MODE</div>
+          <div class="mode-tabs">
+            <button class="mode-tab active" data-mode="camera">Live camera</button>
+            <button class="mode-tab" data-mode="upload">Upload image</button>
+          </div>
+
+          <div class="target-card">
+            <span class="target-label">Active target</span>
+            <div class="target-main"><div class="target-orb"></div><div><strong id="targetName">Black backpack</strong><small id="targetLocation">No case saved yet</small></div></div>
+          </div>
+
+          <div class="model-block">
+            <div class="model-row"><span>Detection model</span><b>COCO-SSD</b></div>
+            <div class="model-row"><span>Match logic</span><b>Class + color</b></div>
+            <div class="model-row"><span>Privacy</span><b>On-device</b></div>
+          </div>
+
+          <button class="btn btn-primary btn-full" id="cameraButton">Start phone camera</button>
+          <label class="btn btn-secondary btn-full upload-label" for="imageUpload">Choose an image<input type="file" id="imageUpload" accept="image/*" capture="environment" hidden></label>
+          <button class="text-btn" id="demoButton" type="button">Run demo mode instead</button>
+        </aside>
+
+        <div class="vision-stage premium-card">
+          <div class="stage-head"><div><span class="stage-title">Vision feed</span><small id="feedLabel">Waiting for input</small></div><div class="fps-chip" id="fpsChip">0 FPS</div></div>
+          <div class="media-wrap" id="mediaWrap">
+            <video id="cameraFeed" playsinline muted></video>
+            <img id="uploadedImage" alt="Uploaded scan target" />
+            <canvas id="detectionCanvas"></canvas>
+            <div class="empty-state" id="emptyState">
+              <div class="empty-orbit"><span>⌁</span></div>
+              <h3>Scanner is ready</h3>
+              <p>Use your phone camera or upload an image to start object detection.</p>
+            </div>
+            <div class="loading-state" id="loadingState"><div class="loader"></div><strong>Loading AI model</strong><span>First load can take a few seconds</span></div>
+          </div>
+          <div class="scan-results">
+            <div class="metric"><span>Objects found</span><strong id="objectCount">0</strong></div>
+            <div class="metric"><span>Best match</span><strong id="bestMatch">—</strong></div>
+            <div class="metric"><span>Confidence</span><strong id="matchConfidence">—</strong></div>
+            <div class="result-state" id="resultState"><span class="result-dot"></span><div><small>STATUS</small><strong>Awaiting scan</strong></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="cases">
+      <div class="section-heading reveal">
+        <div class="eyebrow">03 · Recovery desk</div>
+        <h2>Every case.<br>One clean timeline.</h2>
+        <p>Saved locally in the browser for a frictionless classroom prototype. No account or backend required.</p>
+      </div>
+      <div class="cases-grid" id="casesGrid"></div>
+    </section>
+
+    <section class="section how-section">
+      <div class="how-card reveal">
+        <div class="eyebrow">How it works</div>
+        <div class="how-grid">
+          <div class="how-step"><span>01</span><h3>Register</h3><p>Describe the lost object and where it was last seen.</p></div>
+          <div class="how-arrow">→</div>
+          <div class="how-step"><span>02</span><h3>Scan</h3><p>Use the phone camera or upload a scene image.</p></div>
+          <div class="how-arrow">→</div>
+          <div class="how-step"><span>03</span><h3>Match</h3><p>AI detects objects and scores likely matches.</p></div>
+          <div class="how-arrow">→</div>
+          <div class="how-step"><span>04</span><h3>Recover</h3><p>Review the best candidate and case history.</p></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <a class="brand footer-brand" href="#home"><span class="brand-mark small"><svg viewBox="0 0 44 44" fill="none"><path d="M22 5.5c8.95 0 16.2 7.25 16.2 16.2S30.95 37.9 22 37.9 5.8 30.65 5.8 21.7 13.05 5.5 22 5.5Z" stroke="currentColor" stroke-width="1.5" opacity=".55"/><path d="M31.5 15.1c2.35 2.35 2.35 6.15 0 8.5L23.6 31.5c-2.35 2.35-6.15 2.35-8.5 0s-2.35-6.15 0-8.5l7.9-7.9c2.35-2.35 6.15-2.35 8.5 0Z" fill="currentColor" opacity=".9"/></svg></span><span><strong>OrbitFind</strong><em>AI</em></span></a>
+    <p>AI Lost & Found · Computer Vision Prototype</p>
+    <span>Built for student demonstration · 2026</span>
+  </footer>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3"></script>
+  <script src="app.js"></script>
+</body>
+</html>
