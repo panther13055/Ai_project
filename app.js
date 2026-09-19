@@ -65,6 +65,29 @@ function setAgent(state,message,reasons=[]){
   if(msg) msg.textContent=message;
   if(list) list.innerHTML=(reasons.length?reasons:['Waiting for target']).map(x=>'<span>'+x+'</span>').join('');
 }
+$('#referenceImage').addEventListener('change',async e=>{
+  const file=e.target.files?.[0];
+  if(!file){ pendingReferenceEmbedding=null; $('#referenceStatus').textContent='No reference image'; $('#referenceHint').textContent='Add a clear photo of the actual item for stronger matching.'; $('#referenceThumb').style.backgroundImage=''; return; }
+  const url=URL.createObjectURL(file);
+  $('#referenceThumb').style.backgroundImage='url("'+url+'")';
+  $('#referenceStatus').textContent='Learning visual fingerprint…';
+  $('#referenceHint').textContent='Extracting a visual embedding on this device.';
+  const ref=new Image();
+  ref.onload=async()=>{
+    try{
+      pendingReferenceEmbedding=await embeddingFromElement(ref);
+      $('#referenceStatus').textContent='Reference fingerprint ready';
+      $('#referenceHint').textContent='Visual similarity will be included in candidate scoring.';
+      toast('Reference image learned');
+    }catch(err){
+      console.error(err); pendingReferenceEmbedding=null;
+      $('#referenceStatus').textContent='Could not analyze image';
+      $('#referenceHint').textContent='You can still use category + color matching.';
+    }
+  };
+  ref.src=url;
+});
+
 function updateTarget(){
   const c=currentCase();
   $('#caseIdPreview').textContent=caseId();
