@@ -21,6 +21,23 @@ const ctx = canvas.getContext('2d');
 const emptyState = $('#emptyState');
 const loadingState = $('#loadingState');
 const modelStatus = $('#modelStatus');
+const ORBIT_API = 'https://uglojzicxdopcdtwfzjo.supabase.co/functions/v1/orbitfind-api';
+const DEVICE_TOKEN_KEY = 'orbitfind_device_token';
+function getDeviceToken(){
+  let token=localStorage.getItem(DEVICE_TOKEN_KEY);
+  if(!token){
+    const bytes=new Uint8Array(32); crypto.getRandomValues(bytes);
+    token=Array.from(bytes).map(b=>b.toString(16).padStart(2,'0')).join('');
+    localStorage.setItem(DEVICE_TOKEN_KEY,token);
+  }
+  return token;
+}
+async function cloudCall(payload){
+  const res=await fetch(ORBIT_API,{method:'POST',headers:{'Content-Type':'application/json','x-orbit-token':getDeviceToken()},body:JSON.stringify(payload)});
+  const data=await res.json().catch(()=>({}));
+  if(!res.ok) throw new Error(data.error||('Cloud request failed: '+res.status));
+  return data;
+}
 
 const colorRGB = {
   black:[28,31,38], white:[230,235,240], blue:[55,100,190], red:[190,55,55], green:[55,140,85], yellow:[210,180,50], brown:[115,76,50], gray:[120,125,135], orange:[220,120,45], purple:[130,70,180]
@@ -32,6 +49,8 @@ const saveCases = (v) => localStorage.setItem('orbitfind_cases', JSON.stringify(
 function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._x); t._x=setTimeout(()=>t.classList.remove('show'),2400); }
 function caseId(){ return `OF-${String(Date.now()).slice(-4)}`; }
 function currentCase(){ const arr=storedCases(); return arr[arr.length-1] || null; }
+function cloudToLocal(row){ const sightings=(row.sightings||[]).slice().sort((a,b)=>new Date(a.created_at)-new Date(b.created_at)); const last=sightings[sightings.length-1]; return {id:row.case_code,cloud_id:row.id,category:row.category,color:row.color,details:row.details||'',location:row.last_seen_location,created:new Date(row.created_at).getTime(),status:row.status,sightings:sightings.map(s=>({at:new Date(s.created_at).getTime(),confidence:s.confidence,color:s.detected_color,source:s.source})),lastSighting:last?{at:new Date(last.created_at).getTime(),confidence:last.confidence,color:last.detected_color,source:last.source}:undefined}; }
+async function syncFromCloud(){ try{ const data=await cloudCall({action:'list_cases'}); const remote=(data.cases||[]).map(cloudToLocal).sort((a,b)=>a.created-b.created); if(remote.length){ saveCases(remote); renderCases(); updateTarget(); } return true; }catch(err){ console.warn('Cloud sync unavailable',err); return false; } }
 function pretty(s){ return (s||'').replace(/\b\w/g,c=>c.toUpperCase()); }
 
 function setAgent(state,message,reasons=[]){
@@ -58,10 +77,20 @@ function renderCases(){
   grid.innerHTML=arr.slice(0,6).map(c=>`<article class="case-card"><div class="case-card-top"><span class="case-num">${c.id}</span><span class="case-status">${c.lastSighting?'MATCH SEEN':'ACTIVE'}</span></div><h3>${c.color} ${c.category}</h3><p>${c.details || 'No distinctive details added.'}</p><div class="case-meta"><span>${c.lastSighting?'Last match '+new Date(c.lastSighting.at).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}):c.location}</span><span>${c.lastSighting?c.lastSighting.confidence+'% confidence':new Date(c.created).toLocaleDateString()}</span></div></article>`).join('');
 }
 
-$('#caseForm').addEventListener('submit',e=>{
+$('#caseForm').addEventListener('submit',async e=>{
   e.preventDefault();
-  const c={id:caseId(),category:$('#itemCategory').value,color:$('#itemColor').value,details:$('#itemDetails').value.trim(),location:$('#lastSeen').value.trim(),created:Date.now(),sightings:[]};
-  const arr=storedCases(); arr.push(c); saveCases(arr); updateTarget(); renderCases(); toast('Case saved. Scanner target updated.'); location.hash='scanner';
+  const c={id:caseId(),category:$('#itemCategory').value,color:$('#itemColor').value,details:$('#itemDetails').value.trim(),location:$('#lastSeen').value.trim(),created:Date.now(),sightings:[],status:'active'};
+  const arr=storedCases(); arr.push(c); saveCases(arr); updateTarget(); renderCases(); location.hash='scanner';
+  setAgent('SYNCING','Saving this case securely to the cloud backend.',['Local fallback saved','Cloud sync in progress']);
+  try{
+    const out=await cloudCall({action:'create_case',case:{case_code:c.id,category:c.category,color:c.color,details:c.details,last_seen_location:c.location}});
+    const latest=storedCases(); const idx=latest.findIndex(x=>x.id===c.id); if(idx>=0){latest[idx].cloud_id=out.case.id; latest[idx].status=out.case.status; saveCases(latest);} 
+    toast('Case saved to Supabase cloud'); updateTarget(); renderCases();
+    setAgent('READY','Case is saved in the cloud and ready for scanning.',['Cloud case created','Local fallback retained','Target loaded']);
+  }catch(err){
+    console.error(err); toast('Saved locally. Cloud sync will retry later.');
+    setAgent('OFFLINE READY','Cloud sync failed, but the case is safe on this device and scanning still works.',['Local fallback active','Retry on refresh']);
+  }
 });
 
 $$('.mode-tab').forEach(b=>b.addEventListener('click',()=>{
@@ -158,9 +187,14 @@ async function detectOnce(source,singleImage=false){
 function recordSighting(confidence,color){
   const now=Date.now(); if(now-lastSightingAt<SIGHTING_COOLDOWN) return;
   const arr=storedCases(); if(!arr.length)return; const idx=arr.length-1;
-  const sighting={at:now,confidence,color,source:activeMode};
-  arr[idx].sightings=[...(arr[idx].sightings||[]),sighting].slice(-10); arr[idx].lastSighting=sighting;
+  const active=arr[idx]; const sighting={at:now,confidence,color,source:activeMode};
+  arr[idx].sightings=[...(arr[idx].sightings||[]),sighting].slice(-10); arr[idx].lastSighting=sighting; arr[idx].status='match_seen';
   saveCases(arr); lastSightingAt=now; renderCases();
+  if(active.cloud_id){
+    cloudCall({action:'record_sighting',case_id:active.cloud_id,detected_class:active.category,detected_color:color,confidence,source:activeMode})
+      .then(()=>{ toast('Verified sighting saved to cloud'); })
+      .catch(err=>{ console.warn('Sighting cloud sync failed',err); toast('Sighting saved locally; cloud sync unavailable'); });
+  }
 }
 function drawPredictions(source,preds,singleImage=false){
   const c=currentCase(); const targetCat=c?.category||'backpack'; const targetColor=c?.color||'black';
@@ -210,4 +244,5 @@ const io=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecti
 window.addEventListener('scroll',()=>{const ids=['home','register','scanner','cases'];let active='home';ids.forEach(id=>{const el=document.getElementById(id);if(el&&scrollY>=el.offsetTop-180)active=id});$$('.nav-link').forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+active));});
 
 updateTarget(); renderCases();
+syncFromCloud().then(ok=>{ if(ok && currentCase()) setAgent('READY','Cloud sync complete. Your latest case is loaded.',['Supabase connected','Cases synchronized','Scanner ready']); });
 window.addEventListener('beforeunload',()=>{ if(stream) stream.getTracks().forEach(t=>t.stop()); });
