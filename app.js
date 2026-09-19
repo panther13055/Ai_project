@@ -5,6 +5,12 @@ let activeMode = 'camera';
 let rafId = null;
 let fpsCount = 0;
 let fpsStamp = performance.now();
+let facingMode = 'environment';
+let consecutiveMatches = 0;
+let lastSightingAt = 0;
+let detectionBusy = false;
+const VERIFY_FRAMES = 3;
+const SIGHTING_COOLDOWN = 8000;
 
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => [...document.querySelectorAll(s)];
@@ -28,10 +34,22 @@ function caseId(){ return `OF-${String(Date.now()).slice(-4)}`; }
 function currentCase(){ const arr=storedCases(); return arr[arr.length-1] || null; }
 function pretty(s){ return (s||'').replace(/\b\w/g,c=>c.toUpperCase()); }
 
+function setAgent(state,message,reasons=[]){
+  const stateEl=$('#agentState'), msg=$('#agentMessage'), list=$('#agentReasons');
+  if(stateEl) stateEl.textContent=state;
+  if(msg) msg.textContent=message;
+  if(list) list.innerHTML=(reasons.length?reasons:['Waiting for target']).map(x=>'<span>'+x+'</span>').join('');
+}
 function updateTarget(){
   const c=currentCase();
   $('#caseIdPreview').textContent=caseId();
-  if(c){ $('#targetName').textContent=`${pretty(c.color)} ${pretty(c.category)}`; $('#targetLocation').textContent=`Last seen · ${c.location}`; }
+  if(c){
+    $('#targetName').textContent=pretty(c.color)+' '+pretty(c.category);
+    $('#targetLocation').textContent='Last seen · '+c.location;
+    setAgent('READY','Target locked: '+pretty(c.color)+' '+pretty(c.category)+'. I will verify repeated detections before confirming a match.',['Category target loaded','Color preference loaded','3-frame verification']);
+  } else {
+    setAgent('STANDBY','Register a lost item, then start the camera. I will verify repeated detections before confirming a match.');
+  }
 }
 
 function renderCases(){
@@ -42,7 +60,7 @@ function renderCases(){
 
 $('#caseForm').addEventListener('submit',e=>{
   e.preventDefault();
-  const c={id:caseId(),category:$('#itemCategory').value,color:$('#itemColor').value,details:$('#itemDetails').value.trim(),location:$('#lastSeen').value.trim(),created:Date.now()};
+  const c={id:caseId(),category:$('#itemCategory').value,color:$('#itemColor').value,details:$('#itemDetails').value.trim(),location:$('#lastSeen').value.trim(),created:Date.now(),sightings:[]};
   const arr=storedCases(); arr.push(c); saveCases(arr); updateTarget(); renderCases(); toast('Case saved. Scanner target updated.'); location.hash='scanner';
 });
 
@@ -66,20 +84,35 @@ async function ensureModel(){
   return model;
 }
 
-$('#cameraButton').addEventListener('click',async()=>{
-  if(running){ stopCamera(); return; }
+async function startCamera(){
+  if(!navigator.mediaDevices?.getUserMedia){ toast('Camera API unavailable. Use Upload Image.'); setAgent('CAMERA ERROR','Camera API is unavailable in this browser.',['Use HTTPS','Try Upload Image']); return; }
   try{
     await ensureModel();
-    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}},audio:false});
+    if(!model) throw new Error('Model unavailable');
+    if(stream) stream.getTracks().forEach(t=>t.stop());
+    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:facingMode},width:{ideal:1280},height:{ideal:720}},audio:false});
     video.srcObject=stream; await video.play();
     video.style.display='block'; img.style.display='none'; emptyState.style.display='none';
-    running=true; $('#cameraButton').textContent='Stop camera'; $('#feedLabel').textContent='Live phone camera';
+    running=true; consecutiveMatches=0; $('#verificationCount').textContent='0 / '+VERIFY_FRAMES;
+    $('#cameraButton').textContent='Stop camera'; $('#switchCameraButton').disabled=false;
+    $('#feedLabel').textContent=facingMode==='environment'?'Rear camera · live':'Front camera · live';
+    setAgent('SCANNING','Watching the live feed for the registered target. A match needs repeated confirmation.',['Live detection active','Checking category','Checking color']);
     requestAnimationFrame(detectLoop);
-  }catch(err){ toast('Camera permission unavailable. Use Upload Image or Demo Mode.'); console.error(err); }
-});
+  }catch(err){
+    console.error(err);
+    const msg=err?.name==='NotAllowedError'?'Camera permission was blocked. Allow camera access in browser settings.':'Camera could not start. Try Upload Image.';
+    toast(msg); setAgent('CAMERA ERROR',msg,['Allow camera permission','Upload Image fallback']);
+  }
+}
+$('#cameraButton').addEventListener('click',async()=>{ if(running){ stopCamera(); return; } await startCamera(); });
+$('#switchCameraButton').addEventListener('click',async()=>{ facingMode=facingMode==='environment'?'user':'environment'; if(running){ running=false; cancelAnimationFrame(rafId); await startCamera(); } });
 
 function stopCamera(){
-  running=false; cancelAnimationFrame(rafId); if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;} video.style.display='none'; $('#cameraButton').textContent='Start phone camera'; $('#feedLabel').textContent='Waiting for input';
+  running=false; detectionBusy=false; consecutiveMatches=0; cancelAnimationFrame(rafId);
+  if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}
+  video.style.display='none'; $('#cameraButton').textContent='Start phone camera'; $('#switchCameraButton').disabled=true; $('#feedLabel').textContent='Waiting for input';
+  $('#verificationCount').textContent='0 / '+VERIFY_FRAMES;
+  if(currentCase()) setAgent('READY','Camera stopped. Target remains loaded for the next scan.',['Target retained','No video stored']);
 }
 
 $('#imageUpload').addEventListener('change',async e=>{
@@ -89,7 +122,10 @@ $('#imageUpload').addEventListener('change',async e=>{
 
 async function detectLoop(){
   if(!running) return;
-  if(video.readyState>=2){ await detectOnce(video); fpsCount++; const now=performance.now(); if(now-fpsStamp>1000){ $('#fpsChip').textContent=`${fpsCount} FPS`; fpsCount=0; fpsStamp=now; }}
+  if(video.readyState>=2 && !detectionBusy){
+    detectionBusy=true; await detectOnce(video); detectionBusy=false;
+    fpsCount++; const now=performance.now(); if(now-fpsStamp>1000){ $('#fpsChip').textContent=fpsCount+' FPS'; fpsCount=0; fpsStamp=now; }
+  }
   rafId=requestAnimationFrame(detectLoop);
 }
 
@@ -119,6 +155,13 @@ async function detectOnce(source){
   drawPredictions(source,preds);
 }
 
+function recordSighting(confidence,color){
+  const now=Date.now(); if(now-lastSightingAt<SIGHTING_COOLDOWN) return;
+  const arr=storedCases(); if(!arr.length)return; const idx=arr.length-1;
+  const sighting={at:now,confidence,color,source:activeMode};
+  arr[idx].sightings=[...(arr[idx].sightings||[]),sighting].slice(-10); arr[idx].lastSighting=sighting;
+  saveCases(arr); lastSightingAt=now; renderCases();
+}
 function drawPredictions(source,preds){
   const c=currentCase(); const targetCat=c?.category||'backpack'; const targetColor=c?.color||'black';
   let best=null;
@@ -130,8 +173,28 @@ function drawPredictions(source,preds){
     const label=`${p.class} · ${Math.round(p.score*100)}%${isTarget?` · ${detectedColor}`:''}`; ctx.font=`600 ${Math.max(12,canvas.width/70)}px DM Sans, sans-serif`; const tw=ctx.measureText(label).width+16; const lh=Math.max(24,canvas.width/38); ctx.fillStyle=isTarget?'#69f0d0':'#65bfff'; ctx.fillRect(x,Math.max(0,y-lh),tw,lh); ctx.fillStyle='#071019'; ctx.fillText(label,x+8,Math.max(16,y-7));
   });
   $('#objectCount').textContent=preds.length;
-  if(best){ $('#bestMatch').textContent=pretty(best.class); $('#matchConfidence').textContent=`${best.score}%`; const rs=$('#resultState'); rs.className='result-state '+(best.isTarget?'good':'warn'); rs.querySelector('strong').textContent=best.isTarget?'Potential match found':'Objects detected'; }
-  else{ $('#bestMatch').textContent='—';$('#matchConfidence').textContent='—';const rs=$('#resultState');rs.className='result-state';rs.querySelector('strong').textContent='No objects yet'; }
+  const rs=$('#resultState');
+  if(best?.isTarget){
+    consecutiveMatches=Math.min(VERIFY_FRAMES,consecutiveMatches+1);
+    $('#verificationCount').textContent=consecutiveMatches+' / '+VERIFY_FRAMES;
+    $('#bestMatch').textContent=pretty(best.class); $('#matchConfidence').textContent=best.score+'%';
+    if(consecutiveMatches>=VERIFY_FRAMES){
+      rs.className='result-state good'; rs.querySelector('strong').textContent='Verified potential match';
+      setAgent('MATCH VERIFIED','Repeated detections confirm a likely '+pretty(targetCat)+'. Review the item before marking it recovered.',[best.colorHit?'Color matched: '+pretty(targetColor):'Color estimate: '+pretty(best.color),'Repeated visual confirmation',best.score+'% match score']);
+      recordSighting(best.score,best.color); if(navigator.vibrate) navigator.vibrate([80,50,80]);
+    } else {
+      rs.className='result-state warn'; rs.querySelector('strong').textContent='Verifying candidate';
+      setAgent('VERIFYING','Possible '+pretty(targetCat)+' detected. Waiting for '+(VERIFY_FRAMES-consecutiveMatches)+' more stable confirmation(s).',['Category match','Temporal verification running']);
+    }
+  } else if(best){
+    consecutiveMatches=Math.max(0,consecutiveMatches-1); $('#verificationCount').textContent=consecutiveMatches+' / '+VERIFY_FRAMES;
+    $('#bestMatch').textContent=pretty(best.class); $('#matchConfidence').textContent=best.score+'%'; rs.className='result-state warn'; rs.querySelector('strong').textContent='Other objects detected';
+    setAgent('SCANNING','Detected '+pretty(best.class)+', but the active target is '+pretty(targetCat)+'.',['Continuing search','No false match confirmed']);
+  } else {
+    consecutiveMatches=0; $('#verificationCount').textContent='0 / '+VERIFY_FRAMES;
+    $('#bestMatch').textContent='—'; $('#matchConfidence').textContent='—'; rs.className='result-state'; rs.querySelector('strong').textContent='No objects yet';
+    if(running) setAgent('SCANNING','No target visible yet. Keep the item centered, well lit and unobstructed.',['Good lighting helps','Keep target in frame']);
+  }
 }
 
 $('#demoButton').addEventListener('click',()=>{
@@ -147,4 +210,4 @@ const io=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecti
 window.addEventListener('scroll',()=>{const ids=['home','register','scanner','cases'];let active='home';ids.forEach(id=>{const el=document.getElementById(id);if(el&&scrollY>=el.offsetTop-180)active=id});$$('.nav-link').forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+active));});
 
 updateTarget(); renderCases();
-if(window.innerWidth<700){ $('.upload-label').style.display='none'; }
+window.addEventListener('beforeunload',()=>{ if(stream) stream.getTracks().forEach(t=>t.stop()); });
