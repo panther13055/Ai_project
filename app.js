@@ -51,7 +51,7 @@ const saveCases = (v) => localStorage.setItem('orbitfind_cases', JSON.stringify(
 function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._x); t._x=setTimeout(()=>t.classList.remove('show'),2400); }
 function caseId(){ return `OF-${String(Date.now()).slice(-4)}`; }
 function currentCase(){ const arr=storedCases(); return arr[arr.length-1] || null; }
-function cloudToLocal(row){ const sightings=(row.sightings||[]).slice().sort((a,b)=>new Date(a.created_at)-new Date(b.created_at)); const last=sightings[sightings.length-1]; return {id:row.case_code,cloud_id:row.id,category:row.category,color:row.color,details:row.details||'',location:row.last_seen_location,created:new Date(row.created_at).getTime(),status:row.status,sightings:sightings.map(s=>({at:new Date(s.created_at).getTime(),confidence:s.confidence,color:s.detected_color,source:s.source})),lastSighting:last?{at:new Date(last.created_at).getTime(),confidence:last.confidence,color:last.detected_color,source:last.source}:undefined}; }
+function cloudToLocal(row){ const sightings=(row.sightings||[]).slice().sort((a,b)=>new Date(a.created_at)-new Date(b.created_at)); const last=sightings[sightings.length-1]; return {id:row.case_code,cloud_id:row.id,category:row.category,color:row.color,details:row.details||'',location:row.last_seen_location,created:new Date(row.created_at).getTime(),status:row.status,reference_embedding:Array.isArray(row.reference_embedding)?row.reference_embedding:null,sightings:sightings.map(s=>({at:new Date(s.created_at).getTime(),confidence:s.confidence,color:s.detected_color,source:s.source})),lastSighting:last?{at:new Date(last.created_at).getTime(),confidence:last.confidence,color:last.detected_color,source:last.source}:undefined}; }
 async function syncFromCloud(){ try{ const data=await cloudCall({action:'list_cases'}); const remote=(data.cases||[]).map(cloudToLocal).sort((a,b)=>a.created-b.created); if(remote.length){ saveCases(remote); renderCases(); updateTarget(); } return true; }catch(err){ console.warn('Cloud sync unavailable',err); return false; } }
 function pretty(s){ return (s||'').replace(/\b\w/g,c=>c.toUpperCase()); }
 async function ensureSimilarityModel(){ if(similarityModel) return similarityModel; await tf.ready(); similarityModel=await mobilenet.load({version:2,alpha:0.5}); return similarityModel; }
@@ -108,11 +108,11 @@ function renderCases(){
 
 $('#caseForm').addEventListener('submit',async e=>{
   e.preventDefault();
-  const c={id:caseId(),category:$('#itemCategory').value,color:$('#itemColor').value,details:$('#itemDetails').value.trim(),location:$('#lastSeen').value.trim(),created:Date.now(),sightings:[],status:'active'};
+  const c={id:caseId(),category:$('#itemCategory').value,color:$('#itemColor').value,details:$('#itemDetails').value.trim(),location:$('#lastSeen').value.trim(),created:Date.now(),sightings:[],status:'active',reference_embedding:pendingReferenceEmbedding};
   const arr=storedCases(); arr.push(c); saveCases(arr); updateTarget(); renderCases(); location.hash='scanner';
   setAgent('SYNCING','Saving this case securely to the cloud backend.',['Local fallback saved','Cloud sync in progress']);
   try{
-    const out=await cloudCall({action:'create_case',case:{case_code:c.id,category:c.category,color:c.color,details:c.details,last_seen_location:c.location}});
+    const out=await cloudCall({action:'create_case',case:{case_code:c.id,category:c.category,color:c.color,details:c.details,last_seen_location:c.location,reference_embedding:c.reference_embedding}});
     const latest=storedCases(); const idx=latest.findIndex(x=>x.id===c.id); if(idx>=0){latest[idx].cloud_id=out.case.id; latest[idx].status=out.case.status; saveCases(latest);} 
     toast('Case saved to Supabase cloud'); updateTarget(); renderCases();
     setAgent('READY','Case is saved in the cloud and ready for scanning.',['Cloud case created','Local fallback retained','Target loaded']);
