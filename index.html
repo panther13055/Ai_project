@@ -144,11 +144,21 @@
 
           <div class="model-block">
             <div class="model-row"><span>Detection model</span><b>COCO-SSD</b></div>
-            <div class="model-row"><span>Match logic</span><b>Class + color</b></div>
+            <div class="model-row"><span>Agent logic</span><b>Class + color + stability</b></div>
+            <div class="model-row"><span>Verification</span><b>Multi-frame</b></div>
             <div class="model-row"><span>Privacy</span><b>On-device</b></div>
           </div>
 
+          <div class="agent-card">
+            <div class="agent-head"><span class="agent-pulse"></span><strong>Recovery Agent</strong><span id="agentState">STANDBY</span></div>
+            <p id="agentMessage">Register a lost item, then start the camera. I’ll verify repeated detections before confirming a match.</p>
+            <div class="agent-reasons" id="agentReasons">
+              <span>Waiting for target</span>
+            </div>
+          </div>
+
           <button class="btn btn-primary btn-full" id="cameraButton">Start phone camera</button>
+          <button class="btn btn-secondary btn-full" id="switchCameraButton" type="button" disabled>Switch camera</button>
           <label class="btn btn-secondary btn-full upload-label" for="imageUpload">Choose an image<input type="file" id="imageUpload" accept="image/*" capture="environment" hidden></label>
           <button class="text-btn" id="demoButton" type="button">Run demo mode instead</button>
         </aside>
@@ -170,6 +180,7 @@
             <div class="metric"><span>Objects found</span><strong id="objectCount">0</strong></div>
             <div class="metric"><span>Best match</span><strong id="bestMatch">—</strong></div>
             <div class="metric"><span>Confidence</span><strong id="matchConfidence">—</strong></div>
+            <div class="metric"><span>Verification</span><strong id="verificationCount">0 / 3</strong></div>
             <div class="result-state" id="resultState"><span class="result-dot"></span><div><small>STATUS</small><strong>Awaiting scan</strong></div></div>
           </div>
         </div>
