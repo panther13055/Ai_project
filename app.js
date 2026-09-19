@@ -1,6 +1,7 @@
 let model = null;
 let similarityModel = null;
 let pendingReferenceEmbedding = null;
+let pendingFoundEmbedding = null;
 let stream = null;
 let running = false;
 let activeMode = 'camera';
@@ -281,8 +282,91 @@ $('#demoButton').addEventListener('click',()=>{
 });
 
 const io=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')}),{threshold:.12}); $$('.reveal').forEach(el=>io.observe(el));
-window.addEventListener('scroll',()=>{const ids=['home','register','scanner','cases'];let active='home';ids.forEach(id=>{const el=document.getElementById(id);if(el&&scrollY>=el.offsetTop-180)active=id});$$('.nav-link').forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+active));});
+window.addEventListener('scroll',()=>{const ids=['home','register','scanner','found','cases'];let active='home';ids.forEach(id=>{const el=document.getElementById(id);if(el&&scrollY>=el.offsetTop-180)active=id});$$('.nav-link').forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+active));});
 
 updateTarget(); renderCases();
 syncFromCloud().then(ok=>{ if(ok && currentCase()) setAgent('READY','Cloud sync complete. Your latest case is loaded.',['Supabase connected','Cases synchronized','Scanner ready']); });
 window.addEventListener('beforeunload',()=>{ if(stream) stream.getTracks().forEach(t=>t.stop()); });
+
+const foundImageInput=$('#foundImage');
+if(foundImageInput){
+  foundImageInput.addEventListener('change',async e=>{
+    const file=e.target.files?.[0];
+    pendingFoundEmbedding=null;
+    if(!file){ $('#foundImageStatus').textContent='No image selected'; $('#foundImageHint').textContent='Add a clear photo for visual matching.'; $('#foundThumb').style.backgroundImage=''; return; }
+    const url=URL.createObjectURL(file);
+    $('#foundThumb').style.backgroundImage='url("'+url+'")';
+    $('#foundImageStatus').textContent='Learning found-item fingerprint…';
+    $('#foundImageHint').textContent='Extracting visual features on this device.';
+    const el=new Image();
+    el.onload=async()=>{
+      try{
+        pendingFoundEmbedding=await embeddingFromElement(el);
+        $('#foundImageStatus').textContent='Visual fingerprint ready';
+        $('#foundImageHint').textContent='Ready to compare against active lost-item cases.';
+        toast('Found-item image analyzed');
+      }catch(err){
+        console.error(err);
+        $('#foundImageStatus').textContent='Could not analyze image';
+        $('#foundImageHint').textContent='Try another clear photo.';
+      }
+    };
+    el.src=url;
+  });
+}
+
+function renderFinderMatches(matches){
+  const list=$('#matchList');
+  if(!matches?.length){
+    list.innerHTML='<div class="empty-cases">No active lost-item cases matched this category.</div>';
+    return;
+  }
+  list.innerHTML=matches.map((m,i)=>`
+    <article class="match-card">
+      <div class="match-card-top"><span class="match-rank">CANDIDATE #${i+1} · ${m.case_code}</span><span class="match-score">${m.score}%</span></div>
+      <h4>${pretty(m.color)} ${pretty(m.category)}</h4>
+      <p>${m.visual_similarity!==null&&m.visual_similarity!==undefined ? 'Visual similarity '+m.visual_similarity+'%' : 'Matched without reference-photo similarity'}</p>
+      <div class="reason-row">${(m.reasons||[]).map(r=>'<span>'+r+'</span>').join('')}</div>
+      <div class="match-location">Lost near: ${m.last_seen_location}</div>
+    </article>
+  `).join('');
+}
+
+const foundForm=$('#foundForm');
+if(foundForm){
+  foundForm.addEventListener('submit',async e=>{
+    e.preventDefault();
+    if(!pendingFoundEmbedding){ toast('Wait for the found-item image analysis to finish'); return; }
+    const btn=$('#findMatchesButton');
+    btn.disabled=true; btn.textContent='Searching active cases…';
+    $('#finderState').textContent='MATCHING';
+    $('#finderAgent').textContent='OrbitFind is comparing category, color, description clues and visual fingerprints against active lost-item cases.';
+    try{
+      const out=await cloudCall({
+        action:'match_found_item',
+        category:$('#foundCategory').value,
+        color:$('#foundColor').value,
+        details:$('#foundDetails').value.trim(),
+        found_location:$('#foundLocation').value.trim(),
+        found_embedding:pendingFoundEmbedding
+      });
+      renderFinderMatches(out.matches||[]);
+      const top=out.matches?.[0];
+      if(top){
+        $('#finderState').textContent='RESULTS READY';
+        $('#finderAgent').textContent='Best candidate: '+top.case_code+' at '+top.score+'%. This is an AI candidate ranking, not proof of ownership; a person should verify distinctive details before handover.';
+      }else{
+        $('#finderState').textContent='NO MATCH';
+        $('#finderAgent').textContent='No active case in the same category was found. The found report is still stored in the backend for future workflows.';
+      }
+      toast('Found-item report saved to Supabase');
+    }catch(err){
+      console.error(err);
+      $('#finderState').textContent='ERROR';
+      $('#finderAgent').textContent='The match search could not reach the backend. Please retry when the connection is stable.';
+      toast('Found-item matching failed');
+    }finally{
+      btn.disabled=false; btn.innerHTML='Find possible owners <span>→</span>';
+    }
+  });
+}
