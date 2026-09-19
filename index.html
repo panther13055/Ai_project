@@ -28,6 +28,7 @@
       <a href="#register" class="nav-link">Register</a>
       <a href="#scanner" class="nav-link">AI Scanner</a>
       <a href="#found" class="nav-link">Found Item</a>
+      <a href="#dashboard" class="nav-link">Dashboard</a>
       <a href="#cases" class="nav-link">Cases</a>
     </nav>
     <div class="top-actions">
@@ -281,9 +282,27 @@
       </div>
     </section>
 
+    <section class="section dashboard-section" id="dashboard">
+      <div class="section-heading reveal">
+        <div class="eyebrow">04 · Campus dashboard</div>
+        <h2>Recovery overview.<br><span>One glance, all activity.</span></h2>
+        <p>A lightweight operations dashboard for the PCE prototype, showing current case and recovery activity from the Supabase backend.</p>
+      </div>
+      <div class="stats-grid reveal">
+        <article class="stat-card premium-card"><span>Active cases</span><strong id="statActive">0</strong><small>Currently searching</small></article>
+        <article class="stat-card premium-card"><span>Matches seen</span><strong id="statMatched">0</strong><small>Potential item sightings</small></article>
+        <article class="stat-card premium-card"><span>Recovered</span><strong id="statRecovered">0</strong><small>Closed successfully</small></article>
+        <article class="stat-card premium-card"><span>Found reports</span><strong id="statFound">0</strong><small>Finder submissions</small></article>
+      </div>
+      <div class="dashboard-note premium-card reveal">
+        <div><span class="live-dot"></span><strong>Supabase cloud sync</strong></div>
+        <p id="dashboardStatus">Loading live project statistics…</p>
+      </div>
+    </section>
+
     <section class="section" id="cases">
       <div class="section-heading reveal">
-        <div class="eyebrow">04 · Recovery desk</div>
+        <div class="eyebrow">05 · Recovery desk</div>
         <h2>Every case.<br>One clean timeline.</h2>
         <p>Synced with Supabase cloud, with a local fallback for unreliable networks during demos.</p>
       </div>
