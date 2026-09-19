@@ -39,9 +39,9 @@
   <main>
     <section class="hero section" id="home">
       <div class="hero-copy reveal">
-        <div class="eyebrow"><span class="eyebrow-dot"></span> Computer Vision · Smart Recovery</div>
+        <div class="eyebrow"><span class="eyebrow-dot"></span> PCE Campus Mode · Computer Vision · Smart Recovery</div>
         <h1>Find what’s lost.<br><span>Before it disappears.</span></h1>
-        <p class="hero-lead">OrbitFind uses real-time object detection, visual matching and contextual filters to turn any phone camera into an AI-powered lost-item scanner.</p>
+        <p class="hero-lead">OrbitFind is tuned for Pillai College of Engineering, New Panvel. It combines live object detection, visual similarity and campus-location clues to help recover lost items faster.</p>
         <div class="hero-actions">
           <a class="btn btn-primary" href="#scanner">Start AI scan <span>↗</span></a>
           <a class="btn btn-secondary" href="#register">Register an item</a>
@@ -121,7 +121,32 @@
             <span>Visual match</span>
             <div class="reference-state"><div class="reference-thumb" id="referenceThumb"></div><div><strong id="referenceStatus">No reference image</strong><small id="referenceHint">Add a clear photo of the actual item for stronger matching.</small></div></div>
           </div>
-          <label class="field field-wide"><span>Last seen</span><input id="lastSeen" placeholder="e.g. Computer Lab 4, 2nd floor" required /></label>
+          <label class="field field-wide"><span>Last seen on PCE campus</span><input id="lastSeen" list="pceLocations" placeholder="Choose a campus location or type your own" required /></label>
+          <datalist id="pceLocations">
+            <option value="Reception">
+            <option value="Library">
+            <option value="Canteen">
+            <option value="Auditorium">
+            <option value="Seminar Hall">
+            <option value="AI & Machine Learning Lab">
+            <option value="CISCO Network Academy">
+            <option value="Computer Networking Lab">
+            <option value="Programming Lab">
+            <option value="Data Analytics Lab">
+            <option value="Database Lab">
+            <option value="Project Lab">
+            <option value="E-learning Studio">
+            <option value="Research Center">
+            <option value="Language Lab">
+            <option value="Pillai Centre of Innovation & Entrepreneurship">
+            <option value="Quad Lawn">
+            <option value="Playground">
+            <option value="Multipurpose Sports Ground">
+            <option value="Badminton Courts">
+            <option value="Gymkhana & Health Club">
+            <option value="Corridor / Staircase">
+            <option value="Classroom">
+          </datalist>
         </div>
         <div class="form-foot">
           <div class="case-id">CASE ID <strong id="caseIdPreview">OF-2401</strong></div>
@@ -229,7 +254,7 @@
                 <option value="black">Black</option><option value="white">White</option><option value="blue">Blue</option><option value="red">Red</option><option value="green">Green</option><option value="yellow">Yellow</option><option value="brown">Brown</option><option value="gray">Gray</option><option value="orange">Orange</option><option value="purple">Purple</option>
               </select>
             </label>
-            <label class="field field-wide"><span>Found location</span><input id="foundLocation" placeholder="e.g. Library entrance, Canteen table 4" required /></label>
+            <label class="field field-wide"><span>Found location on PCE campus</span><input id="foundLocation" list="pceLocations" placeholder="Choose a campus location or type your own" required /></label>
             <label class="field field-wide"><span>Visible details</span><input id="foundDetails" placeholder="e.g. red keychain, silver zip, sticker on front" /></label>
             <label class="field field-wide"><span>Found item photo</span><input id="foundImage" type="file" accept="image/*" required /></label>
           </div>
