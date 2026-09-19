@@ -27,6 +27,7 @@
       <a href="#home" class="nav-link active">Overview</a>
       <a href="#register" class="nav-link">Register</a>
       <a href="#scanner" class="nav-link">AI Scanner</a>
+      <a href="#found" class="nav-link">Found Item</a>
       <a href="#cases" class="nav-link">Cases</a>
     </nav>
     <div class="top-actions">
@@ -195,11 +196,71 @@
       </div>
     </section>
 
+    <section class="section found-section" id="found">
+      <div class="section-heading reveal">
+        <div class="eyebrow">03 · I found something</div>
+        <h2>Found an item?<br><span>Let the AI search all open cases.</span></h2>
+        <p>Upload a photo, add where you found it, and OrbitFind will compare it with active lost-item cases and return the strongest candidates.</p>
+      </div>
+
+      <div class="found-layout reveal">
+        <form class="premium-card found-form" id="foundForm">
+          <div class="form-head">
+            <div><span class="step-chip">Finder mode</span><h3>Found item report</h3></div>
+            <span class="autosave">AI match engine</span>
+          </div>
+          <div class="field-grid">
+            <label class="field"><span>Item category</span>
+              <select id="foundCategory" required>
+                <option value="backpack">Backpack</option>
+                <option value="bottle">Bottle</option>
+                <option value="umbrella">Umbrella</option>
+                <option value="handbag">Handbag</option>
+                <option value="suitcase">Suitcase</option>
+                <option value="laptop">Laptop</option>
+                <option value="cell phone">Phone</option>
+                <option value="book">Book</option>
+                <option value="sports ball">Sports item</option>
+              </select>
+            </label>
+            <label class="field"><span>Primary color</span>
+              <select id="foundColor">
+                <option value="">Not sure</option>
+                <option value="black">Black</option><option value="white">White</option><option value="blue">Blue</option><option value="red">Red</option><option value="green">Green</option><option value="yellow">Yellow</option><option value="brown">Brown</option><option value="gray">Gray</option><option value="orange">Orange</option><option value="purple">Purple</option>
+              </select>
+            </label>
+            <label class="field field-wide"><span>Found location</span><input id="foundLocation" placeholder="e.g. Library entrance, Canteen table 4" required /></label>
+            <label class="field field-wide"><span>Visible details</span><input id="foundDetails" placeholder="e.g. red keychain, silver zip, sticker on front" /></label>
+            <label class="field field-wide"><span>Found item photo</span><input id="foundImage" type="file" accept="image/*" required /></label>
+          </div>
+          <div class="finder-preview">
+            <div class="reference-thumb finder-thumb" id="foundThumb"></div>
+            <div>
+              <strong id="foundImageStatus">No image selected</strong>
+              <small id="foundImageHint">Add a clear photo. AI will compare its visual fingerprint with lost-item reference photos.</small>
+            </div>
+          </div>
+          <button class="btn btn-primary btn-full" type="submit" id="findMatchesButton">Find possible owners <span>→</span></button>
+        </form>
+
+        <div class="premium-card match-board">
+          <div class="match-board-head">
+            <div><span class="panel-kicker">AI MATCHES</span><h3>Top candidate cases</h3></div>
+            <span class="match-badge" id="finderState">WAITING</span>
+          </div>
+          <div class="finder-agent" id="finderAgent">Upload a found-item photo and OrbitFind will rank candidate lost-item cases.</div>
+          <div class="match-list" id="matchList">
+            <div class="empty-cases">No found-item search yet.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section class="section" id="cases">
       <div class="section-heading reveal">
-        <div class="eyebrow">03 · Recovery desk</div>
+        <div class="eyebrow">04 · Recovery desk</div>
         <h2>Every case.<br>One clean timeline.</h2>
-        <p>Saved locally in the browser for a frictionless classroom prototype. No account or backend required.</p>
+        <p>Synced with Supabase cloud, with a local fallback for unreliable networks during demos.</p>
       </div>
       <div class="cases-grid" id="casesGrid"></div>
     </section>
