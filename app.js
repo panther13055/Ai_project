@@ -114,7 +114,7 @@ $('#caseForm').addEventListener('submit',async e=>{
   setAgent('SYNCING','Saving this case securely to the cloud backend.',['Local fallback saved','Cloud sync in progress']);
   try{
     const out=await cloudCall({action:'create_case',case:{case_code:c.id,category:c.category,color:c.color,details:c.details,last_seen_location:c.location,reference_embedding:c.reference_embedding}});
-    const latest=storedCases(); const idx=latest.findIndex(x=>x.id===c.id); if(idx>=0){latest[idx].cloud_id=out.case.id; latest[idx].status=out.case.status; saveCases(latest);} 
+    const latest=storedCases(); const idx=latest.findIndex(x=>x.id===c.id); if(idx>=0){latest[idx].cloud_id=out.case.id; latest[idx].status=out.case.status; saveCases(latest);} refreshDashboardStats();
     toast('Case saved to Supabase cloud'); updateTarget(); renderCases();
     setAgent('READY','Case is saved in the cloud and ready for scanning.',['Cloud case created','Local fallback retained','Target loaded']);
   }catch(err){
@@ -282,7 +282,7 @@ $('#demoButton').addEventListener('click',()=>{
 });
 
 const io=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')}),{threshold:.12}); $$('.reveal').forEach(el=>io.observe(el));
-window.addEventListener('scroll',()=>{const ids=['home','register','scanner','found','cases'];let active='home';ids.forEach(id=>{const el=document.getElementById(id);if(el&&scrollY>=el.offsetTop-180)active=id});$$('.nav-link').forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+active));});
+window.addEventListener('scroll',()=>{const ids=['home','register','scanner','found','dashboard','cases'];let active='home';ids.forEach(id=>{const el=document.getElementById(id);if(el&&scrollY>=el.offsetTop-180)active=id});$$('.nav-link').forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+active));});
 
 updateTarget(); renderCases();
 syncFromCloud().then(ok=>{ if(ok && currentCase()) setAgent('READY','Cloud sync complete. Your latest case is loaded.',['Supabase connected','Cases synchronized','Scanner ready']); });
@@ -359,7 +359,7 @@ if(foundForm){
         $('#finderState').textContent='NO MATCH';
         $('#finderAgent').textContent='No active case in the same category was found. The found report is still stored in the backend for future workflows.';
       }
-      toast('Found-item report saved to Supabase');
+      toast('Found-item report saved to Supabase'); refreshDashboardStats();
     }catch(err){
       console.error(err);
       $('#finderState').textContent='ERROR';
@@ -379,10 +379,28 @@ document.addEventListener('click',async e=>{
     await cloudCall({action:'mark_recovered',case_id:btn.dataset.recoverId});
     const arr=storedCases(); const idx=arr.findIndex(x=>x.cloud_id===btn.dataset.recoverId);
     if(idx>=0){ arr[idx].status='recovered'; saveCases(arr); }
-    renderCases(); updateTarget();
+    renderCases(); updateTarget(); refreshDashboardStats();
     toast(btn.dataset.caseCode+' marked as recovered');
     setAgent('RECOVERED','Case '+btn.dataset.caseCode+' is closed. It will no longer appear in found-item matching.',['Cloud status updated','Removed from active matching']);
   }catch(err){
     console.error(err); btn.disabled=false; btn.textContent='Mark recovered'; toast('Could not update case status');
   }
 });
+
+async function refreshDashboardStats(){
+  const status=$('#dashboardStatus');
+  try{
+    const out=await cloudCall({action:'get_stats'});
+    const s=out.stats||{};
+    $('#statActive').textContent=s.active??0;
+    $('#statMatched').textContent=s.matched??0;
+    $('#statRecovered').textContent=s.recovered??0;
+    $('#statFound').textContent=s.found_reports??0;
+    if(status) status.textContent='Live statistics loaded from Supabase backend.';
+  }catch(err){
+    console.warn('Dashboard stats unavailable',err);
+    if(status) status.textContent='Cloud statistics are temporarily unavailable. Core scanning still works.';
+  }
+}
+refreshDashboardStats();
+setInterval(refreshDashboardStats,30000);
