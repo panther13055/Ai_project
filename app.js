@@ -104,7 +104,7 @@ function updateTarget(){
 function renderCases(){
   const grid=$('#casesGrid'); const arr=storedCases().slice().reverse();
   if(!arr.length){ grid.innerHTML='<div class="empty-cases">No cases yet. Register an item above to create your first recovery case.</div>'; return; }
-  grid.innerHTML=arr.slice(0,6).map(c=>`<article class="case-card"><div class="case-card-top"><span class="case-num">${c.id}</span><span class="case-status">${c.lastSighting?'MATCH SEEN':'ACTIVE'}</span></div><h3>${c.color} ${c.category}</h3><p>${c.details || 'No distinctive details added.'}</p><div class="case-meta"><span>${c.lastSighting?'Last match '+new Date(c.lastSighting.at).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}):c.location}</span><span>${c.lastSighting?c.lastSighting.confidence+'% confidence':new Date(c.created).toLocaleDateString()}</span></div></article>`).join('');
+  grid.innerHTML=arr.slice(0,6).map(c=>`<article class="case-card"><div class="case-card-top"><span class="case-num">${c.id}</span><span class="case-status">${c.status==='recovered'?'RECOVERED':c.lastSighting?'MATCH SEEN':'ACTIVE'}</span></div><h3>${c.color} ${c.category}</h3><p>${c.details || 'No distinctive details added.'}</p><div class="case-meta"><span>${c.lastSighting?'Last match '+new Date(c.lastSighting.at).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}):c.location}</span><span>${c.lastSighting?c.lastSighting.confidence+'% confidence':new Date(c.created).toLocaleDateString()}</span></div>${c.status!=='recovered'&&c.cloud_id?`<button class="case-action" data-recover-id="${c.cloud_id}" data-case-code="${c.id}">Mark recovered</button>`:''}</article>`).join('');
 }
 
 $('#caseForm').addEventListener('submit',async e=>{
@@ -370,3 +370,19 @@ if(foundForm){
     }
   });
 }
+
+document.addEventListener('click',async e=>{
+  const btn=e.target.closest?.('[data-recover-id]');
+  if(!btn) return;
+  btn.disabled=true; btn.textContent='Updating…';
+  try{
+    await cloudCall({action:'mark_recovered',case_id:btn.dataset.recoverId});
+    const arr=storedCases(); const idx=arr.findIndex(x=>x.cloud_id===btn.dataset.recoverId);
+    if(idx>=0){ arr[idx].status='recovered'; saveCases(arr); }
+    renderCases(); updateTarget();
+    toast(btn.dataset.caseCode+' marked as recovered');
+    setAgent('RECOVERED','Case '+btn.dataset.caseCode+' is closed. It will no longer appear in found-item matching.',['Cloud status updated','Removed from active matching']);
+  }catch(err){
+    console.error(err); btn.disabled=false; btn.textContent='Mark recovered'; toast('Could not update case status');
+  }
+});
