@@ -5,11 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#070B14" />
   <title>OrbitFind AI — Smart Lost & Found</title>
-  <meta name="description" content="AI-powered lost & found prototype with live camera and image scanning." />
+  <meta name="description" content="AI-powered lost and found system for the PCE campus with live object detection, visual similarity, found-item matching and recovery case management." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="cases-enhanced.css" />
 </head>
 <body>
   <div class="noise"></div>
@@ -42,300 +43,112 @@
       <div class="hero-copy reveal">
         <div class="eyebrow"><span class="eyebrow-dot"></span> PCE Campus Mode · Computer Vision · Smart Recovery</div>
         <h1>Find what’s lost.<br><span>Before it disappears.</span></h1>
-        <p class="hero-lead">OrbitFind is tuned for Pillai College of Engineering, New Panvel. It combines live object detection, visual similarity and campus-location clues to help recover lost items faster.</p>
+        <p class="hero-lead">OrbitFind combines live object detection, visual similarity, campus-location clues and a cloud recovery workflow to help students find lost items faster.</p>
         <div class="hero-actions">
           <a class="btn btn-primary" href="#scanner">Start AI scan <span>↗</span></a>
           <a class="btn btn-secondary" href="#register">Register an item</a>
         </div>
         <div class="proof-row">
-          <div><strong>80+</strong><span>COCO object classes</span></div>
+          <div><strong>80</strong><span>COCO object classes</span></div>
           <div><strong>Live</strong><span>phone camera mode</span></div>
-          <div><strong>Local</strong><span>privacy-first processing</span></div>
+          <div><strong>Cloud</strong><span>Supabase case sync</span></div>
         </div>
       </div>
 
       <div class="hero-visual reveal reveal-delay">
         <div class="scanner-shell">
-          <div class="scanner-topline"><span>LIVE VISION</span><span class="tiny-status">● READY</span></div>
+          <div class="scanner-topline"><span>RECOVERY VISION</span><span class="tiny-status">● READY</span></div>
           <div class="mock-frame">
-            <div class="mock-grid"></div>
-            <div class="scene scene-bag"></div>
-            <div class="scene scene-bottle"></div>
-            <div class="scan-line"></div>
+            <div class="mock-grid"></div><div class="scene scene-bag"></div><div class="scene scene-bottle"></div><div class="scan-line"></div>
             <div class="detect-box box-bag"><span>backpack</span><b>92%</b></div>
             <div class="detect-box box-bottle"><span>bottle</span><b>88%</b></div>
             <div class="crosshair">+</div>
           </div>
-          <div class="scanner-footer">
-            <div><span class="meta-label">Target</span><strong>Black backpack</strong></div>
-            <div class="confidence"><span>Match confidence</span><strong>91%</strong><div class="bar"><i style="width:91%"></i></div></div>
-          </div>
+          <div class="scanner-footer"><div><span class="meta-label">Target</span><strong>Black backpack</strong></div><div class="confidence"><span>Candidate score</span><strong>91%</strong><div class="bar"><i style="width:91%"></i></div></div></div>
         </div>
-        <div class="float-card fc-1"><span class="mini-icon">◎</span><div><small>Potential match</small><b>Corridor · 11:42 AM</b></div></div>
-        <div class="float-card fc-2"><span class="mini-icon">✦</span><div><small>AI model</small><b>COCO-SSD ready</b></div></div>
+        <div class="float-card fc-1"><span class="mini-icon">◎</span><div><small>Potential match</small><b>Library · 11:42 AM</b></div></div>
+        <div class="float-card fc-2"><span class="mini-icon">✦</span><div><small>AI stack</small><b>COCO-SSD + MobileNet</b></div></div>
       </div>
     </section>
 
-    <section class="ticker" aria-label="Capabilities">
-      <div class="ticker-track">
-        <span>OBJECT DETECTION</span><i>◆</i><span>COLOR MATCHING</span><i>◆</i><span>PHONE CAMERA</span><i>◆</i><span>IMAGE SCAN</span><i>◆</i><span>CASE HISTORY</span><i>◆</i><span>LOCAL PROCESSING</span><i>◆</i>
-        <span>OBJECT DETECTION</span><i>◆</i><span>COLOR MATCHING</span><i>◆</i><span>PHONE CAMERA</span><i>◆</i><span>IMAGE SCAN</span><i>◆</i><span>CASE HISTORY</span><i>◆</i><span>LOCAL PROCESSING</span><i>◆</i>
-      </div>
-    </section>
+    <section class="ticker" aria-label="Capabilities"><div class="ticker-track"><span>OBJECT DETECTION</span><i>◆</i><span>VISUAL SIMILARITY</span><i>◆</i><span>CAMPUS LOCATION</span><i>◆</i><span>FOUND MATCHING</span><i>◆</i><span>OWNERSHIP CLAIMS</span><i>◆</i><span>RECOVERY TIMELINE</span><i>◆</i><span>OBJECT DETECTION</span><i>◆</i><span>VISUAL SIMILARITY</span><i>◆</i><span>CAMPUS LOCATION</span><i>◆</i><span>FOUND MATCHING</span><i>◆</i><span>OWNERSHIP CLAIMS</span><i>◆</i><span>RECOVERY TIMELINE</span><i>◆</i></div></section>
 
     <section class="section split-section" id="register">
-      <div class="section-heading reveal">
-        <div class="eyebrow">01 · Register a case</div>
-        <h2>Tell the AI what<br>you’re looking for.</h2>
-        <p>A compact case profile gives the scanner a target: category, color, description and last-seen location.</p>
-      </div>
-
+      <div class="section-heading reveal"><div class="eyebrow">01 · Register a case</div><h2>Tell the AI what<br>you’re looking for.</h2><p>Create a recovery profile using category, color, identifying details, reference photo and last-seen PCE location.</p></div>
       <form class="premium-card case-form reveal" id="caseForm">
-        <div class="form-head">
-          <div><span class="step-chip">Step 01</span><h3>Lost item profile</h3></div>
-          <span class="autosave">● Auto-saved locally</span>
-        </div>
+        <div class="form-head"><div><span class="step-chip">Lost report</span><h3>Lost item profile</h3></div><span class="autosave">● Local fallback + cloud sync</span></div>
         <div class="field-grid">
-          <label class="field"><span>Item category</span>
-            <select id="itemCategory" required>
-              <option value="backpack">Backpack</option>
-              <option value="bottle">Bottle</option>
-              <option value="umbrella">Umbrella</option>
-              <option value="handbag">Handbag</option>
-              <option value="suitcase">Suitcase</option>
-              <option value="laptop">Laptop</option>
-              <option value="cell phone">Phone</option>
-              <option value="book">Book</option>
-              <option value="sports ball">Sports item</option>
-            </select>
-          </label>
-          <label class="field"><span>Primary color</span>
-            <select id="itemColor" required>
-              <option value="black">Black</option><option value="white">White</option><option value="blue">Blue</option><option value="red">Red</option><option value="green">Green</option><option value="yellow">Yellow</option><option value="brown">Brown</option><option value="gray">Gray</option><option value="orange">Orange</option><option value="purple">Purple</option>
-            </select>
-          </label>
-          <label class="field field-wide"><span>Distinctive details</span><input id="itemDetails" placeholder="e.g. Nike logo, silver zip, keychain on left strap" /></label>
-          <label class="field field-wide"><span>Reference photo <small style="color:#64748b;font-weight:500">recommended for exact visual matching</small></span>
-            <input id="referenceImage" type="file" accept="image/*" />
-          </label>
-          <div class="field field-wide reference-preview" id="referencePreview">
-            <span>Visual match</span>
-            <div class="reference-state"><div class="reference-thumb" id="referenceThumb"></div><div><strong id="referenceStatus">No reference image</strong><small id="referenceHint">Add a clear photo of the actual item for stronger matching.</small></div></div>
-          </div>
+          <label class="field"><span>Item category</span><select id="itemCategory" required><option value="backpack">Backpack</option><option value="bottle">Bottle</option><option value="umbrella">Umbrella</option><option value="handbag">Handbag</option><option value="suitcase">Suitcase</option><option value="laptop">Laptop</option><option value="cell phone">Phone</option><option value="book">Book</option><option value="sports ball">Sports item</option></select></label>
+          <label class="field"><span>Primary color</span><select id="itemColor" required><option value="black">Black</option><option value="white">White</option><option value="blue">Blue</option><option value="red">Red</option><option value="green">Green</option><option value="yellow">Yellow</option><option value="brown">Brown</option><option value="gray">Gray</option><option value="orange">Orange</option><option value="purple">Purple</option></select></label>
+          <label class="field field-wide"><span>Distinctive details</span><input id="itemDetails" placeholder="e.g. Nike logo, silver zip, red keychain on left strap" /></label>
+          <label class="field field-wide"><span>Reference photo <small style="color:#64748b;font-weight:500">recommended for stronger visual matching</small></span><input id="referenceImage" type="file" accept="image/*" /></label>
+          <div class="field field-wide reference-preview" id="referencePreview"><span>Visual fingerprint</span><div class="reference-state"><div class="reference-thumb" id="referenceThumb"></div><div><strong id="referenceStatus">No reference image</strong><small id="referenceHint">Add a clear photo of the actual item for stronger matching.</small></div></div></div>
           <label class="field field-wide"><span>Last seen on PCE campus</span><input id="lastSeen" list="pceLocations" placeholder="Choose a campus location or type your own" required /></label>
-          <datalist id="pceLocations">
-            <option value="Reception">
-            <option value="Library">
-            <option value="Canteen">
-            <option value="Auditorium">
-            <option value="Seminar Hall">
-            <option value="AI & Machine Learning Lab">
-            <option value="CISCO Network Academy">
-            <option value="Computer Networking Lab">
-            <option value="Programming Lab">
-            <option value="Data Analytics Lab">
-            <option value="Database Lab">
-            <option value="Project Lab">
-            <option value="E-learning Studio">
-            <option value="Research Center">
-            <option value="Language Lab">
-            <option value="Pillai Centre of Innovation & Entrepreneurship">
-            <option value="Quad Lawn">
-            <option value="Playground">
-            <option value="Multipurpose Sports Ground">
-            <option value="Badminton Courts">
-            <option value="Gymkhana & Health Club">
-            <option value="Corridor / Staircase">
-            <option value="Classroom">
-          </datalist>
+          <datalist id="pceLocations"><option value="Reception"><option value="Library"><option value="Canteen"><option value="Auditorium"><option value="Seminar Hall"><option value="AI & Machine Learning Lab"><option value="CISCO Network Academy"><option value="Computer Networking Lab"><option value="Programming Lab"><option value="Data Analytics Lab"><option value="Database Lab"><option value="Project Lab"><option value="E-learning Studio"><option value="Research Center"><option value="Language Lab"><option value="Pillai Centre of Innovation & Entrepreneurship"><option value="Quad Lawn"><option value="Playground"><option value="Multipurpose Sports Ground"><option value="Badminton Courts"><option value="Gymkhana & Health Club"><option value="Corridor / Staircase"><option value="Classroom"></datalist>
         </div>
-        <div class="form-foot">
-          <div class="case-id">CASE ID <strong id="caseIdPreview">OF-2401</strong></div>
-          <button class="btn btn-primary" type="submit">Save & scan item <span>→</span></button>
-        </div>
+        <div class="form-foot"><div class="case-id">CASE ID <strong id="caseIdPreview">OF-2401</strong></div><button class="btn btn-primary" type="submit">Save & scan item <span>→</span></button></div>
       </form>
     </section>
 
     <section class="section scanner-section" id="scanner">
-      <div class="section-heading centered reveal">
-        <div class="eyebrow">02 · AI Scanner</div>
-        <h2>Use your phone camera.<br><span>No extra hardware.</span></h2>
-        <p>Open this deployed site directly on your phone and tap Live Camera. The rear camera becomes the detection feed.</p>
-      </div>
-
+      <div class="section-heading centered reveal"><div class="eyebrow">02 · AI Scanner</div><h2>Turn a phone camera<br><span>into a recovery scanner.</span></h2><p>COCO-SSD finds supported objects. MobileNet visual fingerprints, color clues and repeated detections strengthen the candidate match.</p></div>
       <div class="scanner-layout reveal">
         <aside class="scan-panel premium-card">
-          <div class="panel-kicker">SCAN MODE</div>
-          <div class="mode-tabs">
-            <button class="mode-tab active" data-mode="camera">Live camera</button>
-            <button class="mode-tab" data-mode="upload">Upload image</button>
-          </div>
-
-          <div class="target-card">
-            <span class="target-label">Active target</span>
-            <div class="target-main"><div class="target-orb"></div><div><strong id="targetName">Black backpack</strong><small id="targetLocation">No case saved yet</small></div></div>
-          </div>
-
-          <div class="model-block">
-            <div class="model-row"><span>Detection model</span><b>COCO-SSD</b></div>
-            <div class="model-row"><span>Agent logic</span><b>Class + color + visual similarity</b></div>
-            <div class="model-row"><span>Verification</span><b>Multi-frame</b></div>
-            <div class="model-row"><span>Privacy</span><b>On-device</b></div>
-          </div>
-
-          <div class="agent-card">
-            <div class="agent-head"><span class="agent-pulse"></span><strong>Recovery Agent</strong><span id="agentState">STANDBY</span></div>
-            <p id="agentMessage">Register a lost item, then start the camera. I’ll verify repeated detections before confirming a match.</p>
-            <div class="agent-reasons" id="agentReasons">
-              <span>Waiting for target</span>
-            </div>
-          </div>
-
-          <button class="btn btn-primary btn-full" id="cameraButton">Start phone camera</button>
-          <button class="btn btn-secondary btn-full" id="switchCameraButton" type="button" disabled>Switch camera</button>
-          <label class="btn btn-secondary btn-full upload-label" for="imageUpload">Choose an image<input type="file" id="imageUpload" accept="image/*" capture="environment" hidden></label>
-          <button class="text-btn" id="demoButton" type="button">Run demo mode instead</button>
+          <div class="panel-kicker">SCAN MODE</div><div class="mode-tabs"><button class="mode-tab active" data-mode="camera">Live camera</button><button class="mode-tab" data-mode="upload">Upload image</button></div>
+          <div class="target-card"><span class="target-label">Active target</span><div class="target-main"><div class="target-orb"></div><div><strong id="targetName">Black backpack</strong><small id="targetLocation">No case saved yet</small></div></div></div>
+          <div class="model-block"><div class="model-row"><span>Detection</span><b>COCO-SSD</b></div><div class="model-row"><span>Visual features</span><b>MobileNet</b></div><div class="model-row"><span>Verification</span><b>Multi-frame</b></div><div class="model-row"><span>Inference</span><b>On-device</b></div></div>
+          <div class="agent-card"><div class="agent-head"><span class="agent-pulse"></span><strong>Recovery Agent</strong><span id="agentState">STANDBY</span></div><p id="agentMessage">Register a lost item, then start the camera. I’ll verify repeated detections before confirming a candidate.</p><div class="agent-reasons" id="agentReasons"><span>Waiting for target</span></div></div>
+          <button class="btn btn-primary btn-full" id="cameraButton">Start phone camera</button><button class="btn btn-secondary btn-full" id="switchCameraButton" type="button" disabled>Switch camera</button>
+          <label class="btn btn-secondary btn-full upload-label" for="imageUpload">Choose an image<input type="file" id="imageUpload" accept="image/*" capture="environment" hidden></label><button class="text-btn" id="demoButton" type="button">Run demo mode instead</button>
         </aside>
-
         <div class="vision-stage premium-card">
           <div class="stage-head"><div><span class="stage-title">Vision feed</span><small id="feedLabel">Waiting for input</small></div><div class="fps-chip" id="fpsChip">0 FPS</div></div>
-          <div class="media-wrap" id="mediaWrap">
-            <video id="cameraFeed" playsinline muted></video>
-            <img id="uploadedImage" alt="Uploaded scan target" />
-            <canvas id="detectionCanvas"></canvas>
-            <div class="empty-state" id="emptyState">
-              <div class="empty-orbit"><span>⌁</span></div>
-              <h3>Scanner is ready</h3>
-              <p>Use your phone camera or upload an image to start object detection.</p>
-            </div>
-            <div class="loading-state" id="loadingState"><div class="loader"></div><strong>Loading AI model</strong><span>First load can take a few seconds</span></div>
-          </div>
-          <div class="scan-results">
-            <div class="metric"><span>Objects found</span><strong id="objectCount">0</strong></div>
-            <div class="metric"><span>Best match</span><strong id="bestMatch">—</strong></div>
-            <div class="metric"><span>Confidence</span><strong id="matchConfidence">—</strong></div>
-            <div class="metric"><span>Visual similarity</span><strong id="visualSimilarity">—</strong></div>
-            <div class="metric"><span>Verification</span><strong id="verificationCount">0 / 3</strong></div>
-            <div class="result-state" id="resultState"><span class="result-dot"></span><div><small>STATUS</small><strong>Awaiting scan</strong></div></div>
-          </div>
+          <div class="media-wrap" id="mediaWrap"><video id="cameraFeed" playsinline muted></video><img id="uploadedImage" alt="Uploaded scan target" /><canvas id="detectionCanvas"></canvas><div class="empty-state" id="emptyState"><div class="empty-orbit"><span>⌁</span></div><h3>Scanner is ready</h3><p>Use your phone camera or upload an image to start object detection.</p></div><div class="loading-state" id="loadingState"><div class="loader"></div><strong>Loading AI model</strong><span>First load can take a few seconds</span></div></div>
+          <div class="scan-results"><div class="metric"><span>Objects found</span><strong id="objectCount">0</strong></div><div class="metric"><span>Best match</span><strong id="bestMatch">—</strong></div><div class="metric"><span>Candidate score</span><strong id="matchConfidence">—</strong></div><div class="metric"><span>Visual similarity</span><strong id="visualSimilarity">—</strong></div><div class="metric"><span>Verification</span><strong id="verificationCount">0 / 3</strong></div><div class="result-state" id="resultState"><span class="result-dot"></span><div><small>STATUS</small><strong>Awaiting scan</strong></div></div></div>
         </div>
       </div>
     </section>
 
     <section class="section found-section" id="found">
-      <div class="section-heading reveal">
-        <div class="eyebrow">03 · I found something</div>
-        <h2>Found an item?<br><span>Let the AI search all open cases.</span></h2>
-        <p>Upload a photo, add where you found it, and OrbitFind will compare it with active lost-item cases and return the strongest candidates.</p>
-      </div>
-
+      <div class="section-heading reveal"><div class="eyebrow">03 · I found something</div><h2>Found an item?<br><span>Search open cases with AI.</span></h2><p>Submit a finder report. OrbitFind ranks the strongest active lost-item candidates using category, color, description, visual similarity and campus location.</p></div>
       <div class="found-layout reveal">
         <form class="premium-card found-form" id="foundForm">
-          <div class="form-head">
-            <div><span class="step-chip">Finder mode</span><h3>Found item report</h3></div>
-            <span class="autosave">AI match engine</span>
-          </div>
+          <div class="form-head"><div><span class="step-chip">Finder mode</span><h3>Found item report</h3></div><span class="autosave">AI match engine</span></div>
           <div class="field-grid">
-            <label class="field"><span>Item category</span>
-              <select id="foundCategory" required>
-                <option value="backpack">Backpack</option>
-                <option value="bottle">Bottle</option>
-                <option value="umbrella">Umbrella</option>
-                <option value="handbag">Handbag</option>
-                <option value="suitcase">Suitcase</option>
-                <option value="laptop">Laptop</option>
-                <option value="cell phone">Phone</option>
-                <option value="book">Book</option>
-                <option value="sports ball">Sports item</option>
-              </select>
-            </label>
-            <label class="field"><span>Primary color</span>
-              <select id="foundColor">
-                <option value="">Not sure</option>
-                <option value="black">Black</option><option value="white">White</option><option value="blue">Blue</option><option value="red">Red</option><option value="green">Green</option><option value="yellow">Yellow</option><option value="brown">Brown</option><option value="gray">Gray</option><option value="orange">Orange</option><option value="purple">Purple</option>
-              </select>
-            </label>
+            <label class="field"><span>Item category</span><select id="foundCategory" required><option value="backpack">Backpack</option><option value="bottle">Bottle</option><option value="umbrella">Umbrella</option><option value="handbag">Handbag</option><option value="suitcase">Suitcase</option><option value="laptop">Laptop</option><option value="cell phone">Phone</option><option value="book">Book</option><option value="sports ball">Sports item</option></select></label>
+            <label class="field"><span>Primary color</span><select id="foundColor"><option value="">Not sure</option><option value="black">Black</option><option value="white">White</option><option value="blue">Blue</option><option value="red">Red</option><option value="green">Green</option><option value="yellow">Yellow</option><option value="brown">Brown</option><option value="gray">Gray</option><option value="orange">Orange</option><option value="purple">Purple</option></select></label>
             <label class="field field-wide"><span>Found location on PCE campus</span><input id="foundLocation" list="pceLocations" placeholder="Choose a campus location or type your own" required /></label>
             <label class="field field-wide"><span>Visible details</span><input id="foundDetails" placeholder="e.g. red keychain, silver zip, sticker on front" /></label>
             <label class="field field-wide"><span>Found item photo</span><input id="foundImage" type="file" accept="image/*" required /></label>
           </div>
-          <div class="finder-preview">
-            <div class="reference-thumb finder-thumb" id="foundThumb"></div>
-            <div>
-              <strong id="foundImageStatus">No image selected</strong>
-              <small id="foundImageHint">Add a clear photo. AI will compare its visual fingerprint with lost-item reference photos.</small>
-            </div>
-          </div>
+          <div class="finder-preview"><div class="reference-thumb finder-thumb" id="foundThumb"></div><div><strong id="foundImageStatus">No image selected</strong><small id="foundImageHint">Add a clear photo. AI will compare its visual fingerprint with lost-item reference photos.</small></div></div>
           <button class="btn btn-primary btn-full" type="submit" id="findMatchesButton">Find possible owners <span>→</span></button>
         </form>
-
-        <div class="premium-card match-board">
-          <div class="match-board-head">
-            <div><span class="panel-kicker">AI MATCHES</span><h3>Top candidate cases</h3></div>
-            <span class="match-badge" id="finderState">WAITING</span>
-          </div>
-          <div class="finder-agent" id="finderAgent">Upload a found-item photo and OrbitFind will rank candidate lost-item cases.</div>
-          <div class="match-list" id="matchList">
-            <div class="empty-cases">No found-item search yet.</div>
-          </div>
-        </div>
+        <div class="premium-card match-board"><div class="match-board-head"><div><span class="panel-kicker">AI MATCHES</span><h3>Top candidate cases</h3></div><span class="match-badge" id="finderState">WAITING</span></div><div class="finder-agent" id="finderAgent">Upload a found-item photo and OrbitFind will rank candidate lost-item cases.</div><div class="match-list" id="matchList"><div class="empty-cases">No found-item search yet.</div></div></div>
       </div>
     </section>
 
     <section class="section dashboard-section" id="dashboard">
-      <div class="section-heading reveal">
-        <div class="eyebrow">04 · Campus dashboard</div>
-        <h2>Recovery overview.<br><span>One glance, all activity.</span></h2>
-        <p>A lightweight operations dashboard for the PCE prototype, showing current case and recovery activity from the Supabase backend.</p>
-      </div>
-      <div class="stats-grid reveal">
-        <article class="stat-card premium-card"><span>Active cases</span><strong id="statActive">0</strong><small>Currently searching</small></article>
-        <article class="stat-card premium-card"><span>Matches seen</span><strong id="statMatched">0</strong><small>Potential item sightings</small></article>
-        <article class="stat-card premium-card"><span>Recovered</span><strong id="statRecovered">0</strong><small>Closed successfully</small></article>
-        <article class="stat-card premium-card"><span>Found reports</span><strong id="statFound">0</strong><small>Finder submissions</small></article>
-      </div>
-      <div class="dashboard-note premium-card reveal">
-        <div><span class="live-dot"></span><strong>Supabase cloud sync</strong></div>
-        <p id="dashboardStatus">Loading live project statistics…</p>
-      </div>
+      <div class="section-heading reveal"><div class="eyebrow">04 · Campus dashboard</div><h2>Recovery overview.<br><span>One glance, all activity.</span></h2><p>Live operations view backed by Supabase. Track open searches, AI sightings, found reports, recoveries and ownership verification.</p></div>
+      <div class="stats-grid reveal"><article class="stat-card premium-card"><span>Active cases</span><strong id="statActive">0</strong><small>Currently searching</small></article><article class="stat-card premium-card"><span>Matches seen</span><strong id="statMatched">0</strong><small>Potential AI sightings</small></article><article class="stat-card premium-card"><span>Recovered</span><strong id="statRecovered">0</strong><small>Closed successfully</small></article><article class="stat-card premium-card"><span>Found reports</span><strong id="statFound">0</strong><small>Finder submissions</small></article></div>
+      <div class="dashboard-note premium-card reveal"><div><span class="live-dot"></span><strong>Supabase cloud sync</strong></div><p id="dashboardStatus">Loading live project statistics…</p></div>
     </section>
 
     <section class="section" id="cases">
-      <div class="section-heading reveal">
-        <div class="eyebrow">05 · Recovery desk</div>
-        <h2>Every case.<br>One clean timeline.</h2>
-        <p>Synced with Supabase cloud, with a local fallback for unreliable networks during demos.</p>
-      </div>
+      <div class="section-heading reveal"><div class="eyebrow">05 · Recovery desk</div><h2>Every case.<br><span>One intelligent timeline.</span></h2><p>Search, filter, inspect AI sightings, switch scanner targets, review ownership claims and close recovered cases from one desk.</p></div>
       <div class="cases-grid" id="casesGrid"></div>
     </section>
 
-    <section class="section how-section">
-      <div class="how-card reveal">
-        <div class="eyebrow">How it works</div>
-        <div class="how-grid">
-          <div class="how-step"><span>01</span><h3>Register</h3><p>Describe the lost object and where it was last seen.</p></div>
-          <div class="how-arrow">→</div>
-          <div class="how-step"><span>02</span><h3>Scan</h3><p>Use the phone camera or upload a scene image.</p></div>
-          <div class="how-arrow">→</div>
-          <div class="how-step"><span>03</span><h3>Match</h3><p>AI detects objects and scores likely matches.</p></div>
-          <div class="how-arrow">→</div>
-          <div class="how-step"><span>04</span><h3>Recover</h3><p>Review the best candidate and case history.</p></div>
-        </div>
-      </div>
-    </section>
+    <section class="section how-section"><div class="how-card reveal"><div class="eyebrow">End-to-end recovery</div><div class="how-grid"><div class="how-step"><span>01</span><h3>Register</h3><p>Create the lost-item profile and visual fingerprint.</p></div><div class="how-arrow">→</div><div class="how-step"><span>02</span><h3>Detect</h3><p>Scan with phone camera or analyze an uploaded image.</p></div><div class="how-arrow">→</div><div class="how-step"><span>03</span><h3>Match</h3><p>Rank found reports against open lost cases.</p></div><div class="how-arrow">→</div><div class="how-step"><span>04</span><h3>Verify</h3><p>Review identifying details before handover.</p></div><div class="how-arrow">→</div><div class="how-step"><span>05</span><h3>Recover</h3><p>Close the case and remove it from active matching.</p></div></div></div></section>
   </main>
 
-  <footer>
-    <a class="brand footer-brand" href="#home"><span class="brand-mark small"><svg viewBox="0 0 44 44" fill="none"><path d="M22 5.5c8.95 0 16.2 7.25 16.2 16.2S30.95 37.9 22 37.9 5.8 30.65 5.8 21.7 13.05 5.5 22 5.5Z" stroke="currentColor" stroke-width="1.5" opacity=".55"/><path d="M31.5 15.1c2.35 2.35 2.35 6.15 0 8.5L23.6 31.5c-2.35 2.35-6.15 2.35-8.5 0s-2.35-6.15 0-8.5l7.9-7.9c2.35-2.35 6.15-2.35 8.5 0Z" fill="currentColor" opacity=".9"/></svg></span><span><strong>OrbitFind</strong><em>AI</em></span></a>
-    <p>AI Lost & Found · Computer Vision Prototype</p>
-    <span>Built for student demonstration · 2026</span>
-  </footer>
+  <footer><a class="brand footer-brand" href="#home"><span class="brand-mark small"><svg viewBox="0 0 44 44" fill="none"><path d="M22 5.5c8.95 0 16.2 7.25 16.2 16.2S30.95 37.9 22 37.9 5.8 30.65 5.8 21.7 13.05 5.5 22 5.5Z" stroke="currentColor" stroke-width="1.5" opacity=".55"/><path d="M31.5 15.1c2.35 2.35 2.35 6.15 0 8.5L23.6 31.5c-2.35 2.35-6.15 2.35-8.5 0s-2.35-6.15 0-8.5l7.9-7.9c2.35-2.35 6.15-2.35 8.5 0Z" fill="currentColor" opacity=".9"/></svg></span><span><strong>OrbitFind</strong><em>AI</em></span></a><p>AI Lost & Found · Computer Vision Prototype</p><span>PCE campus prototype · 2026</span></footer>
 
   <div class="toast" id="toast"></div>
-
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.1"></script>
   <script src="app.js"></script>
+  <script src="cases-enhanced.js"></script>
 </body>
 </html>
