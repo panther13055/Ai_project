@@ -69,7 +69,9 @@ function setAgent(state,message,reasons=[]){
 }
 $('#referenceImage').addEventListener('change',async e=>{
   const file=e.target.files?.[0];
-  if(!file){ pendingReferenceEmbedding=null; $('#referenceStatus').textContent='No reference image'; $('#referenceHint').textContent='Add a clear photo of the actual item for stronger matching.'; $('#referenceThumb').style.backgroundImage=''; return; }
+  const refZone=$('#referenceDropzone'); const refName=$('#referenceFileName');
+  if(!file){ pendingReferenceEmbedding=null; refZone?.classList.remove('has-file'); if(refName) refName.textContent='Add reference image'; $('#referenceStatus').textContent='No reference image'; $('#referenceHint').textContent='Add a clear photo of the actual item for stronger matching.'; $('#referenceThumb').style.backgroundImage=''; return; }
+  refZone?.classList.add('has-file'); if(refName) refName.textContent=file.name;
   const url=URL.createObjectURL(file);
   $('#referenceThumb').style.backgroundImage='url("'+url+'")';
   $('#referenceStatus').textContent='Learning visual fingerprint…';
@@ -308,7 +310,9 @@ if(foundImageInput){
   foundImageInput.addEventListener('change',async e=>{
     const file=e.target.files?.[0];
     pendingFoundEmbedding=null;
-    if(!file){ $('#foundImageStatus').textContent='No image selected'; $('#foundImageHint').textContent='Add a clear photo for visual matching.'; $('#foundThumb').style.backgroundImage=''; return; }
+    const foundZone=$('#foundDropzone'); const foundName=$('#foundFileName');
+    if(!file){ foundZone?.classList.remove('has-file'); if(foundName) foundName.textContent='Add found-item photo'; $('#foundImageStatus').textContent='No image selected'; $('#foundImageHint').textContent='Add a clear photo for visual matching.'; $('#foundThumb').style.backgroundImage=''; return; }
+    foundZone?.classList.add('has-file'); if(foundName) foundName.textContent=file.name;
     const url=URL.createObjectURL(file);
     $('#foundThumb').style.backgroundImage='url("'+url+'")';
     $('#foundImageStatus').textContent='Learning found-item fingerprint…';
