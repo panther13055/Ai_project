@@ -1,15 +1,131 @@
-.brand-mark.orbitfind-mark{display:inline-grid;place-items:center;width:48px;height:44px;flex:0 0 auto}
-.brand-mark.orbitfind-mark img{display:block;width:46px;height:40px;object-fit:contain;filter:drop-shadow(0 0 10px rgba(159,190,255,.32))}
-.footer-brand .brand-mark.orbitfind-mark{width:42px;height:38px}.footer-brand .brand-mark.orbitfind-mark img{width:40px;height:34px}
-.of-splash{position:fixed;inset:0;z-index:5000;display:grid;place-items:center;background:#070a10;transition:opacity .45s ease,visibility .45s ease}
+/* OrbitFind brand + header polish */
+.topbar{
+  height:72px!important;
+  padding:0 20px!important;
+  background:rgba(8,10,12,.96)!important;
+  border-bottom:1px solid rgba(255,255,255,.055)!important;
+  backdrop-filter:blur(18px);
+  box-shadow:0 10px 28px rgba(0,0,0,.18);
+}
+.topbar .brand{
+  display:flex!important;
+  align-items:center!important;
+  gap:10px!important;
+  min-width:215px;
+  text-decoration:none;
+  color:#f3f6fb!important;
+}
+.brand-mark.orbitfind-mark{
+  width:42px!important;
+  height:38px!important;
+  display:inline-grid!important;
+  place-items:center!important;
+  flex:0 0 auto;
+  background:transparent!important;
+}
+.brand-mark.orbitfind-mark img{
+  width:40px!important;
+  height:36px!important;
+  display:block;
+  object-fit:contain;
+  filter:drop-shadow(0 0 10px rgba(170,191,255,.2));
+}
+.topbar .brand>span:last-child{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.topbar .brand strong{
+  font:700 21px "Space Grotesk",sans-serif!important;
+  letter-spacing:-.035em;
+  color:#f4f6fb;
+}
+.topbar .brand em{
+  font:500 9px "DM Sans",sans-serif!important;
+  font-style:normal!important;
+  color:#9ce8d3!important;
+  border:1px solid rgba(108,224,194,.28)!important;
+  padding:4px 7px!important;
+  border-radius:999px!important;
+  background:rgba(85,190,160,.06)!important;
+}
+.topbar .nav{
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  display:flex;
+  align-items:center;
+  gap:4px;
+  padding:5px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.04);
+  background:#0e1113;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.02);
+}
+.topbar .nav-link{
+  color:#8c929c!important;
+  font-size:11px!important;
+  padding:9px 12px!important;
+  border-radius:10px!important;
+  transition:.2s ease!important;
+}
+.topbar .nav-link:hover,
+.topbar .nav-link.active{
+  color:#f2f4f7!important;
+  background:#15191c!important;
+}
+.topbar .top-actions{
+  margin-left:auto;
+  display:flex;
+  align-items:center;
+  gap:9px;
+}
+.topbar .status-chip{
+  height:34px;
+  padding:0 11px!important;
+  border-radius:999px!important;
+  background:#0f1318!important;
+  border:1px solid #1c242f!important;
+}
+.admin-entry{
+  height:34px;
+  border:1px solid #1f493d!important;
+  background:#0c1714!important;
+  color:#89e8cb!important;
+  border-radius:10px!important;
+  padding:0 13px!important;
+  font:600 9px "DM Sans",sans-serif!important;
+  letter-spacing:.05em;
+  cursor:pointer;
+}
+.admin-entry:hover{background:#10201c!important}
+.footer-brand .brand-mark.orbitfind-mark{width:38px!important;height:34px!important}
+.footer-brand .brand-mark.orbitfind-mark img{width:36px!important;height:32px!important}
+
+/* splash */
+.of-splash{position:fixed;inset:0;z-index:5000;display:grid;place-items:center;background:#090b0d;transition:opacity .4s ease,visibility .4s ease}
 .of-splash.hide{opacity:0;visibility:hidden}
 .of-splash-inner{display:flex;flex-direction:column;align-items:center;gap:14px}
-.of-splash-logo{width:108px;height:94px;filter:drop-shadow(0 0 28px rgba(150,190,255,.38));animation:ofPulse 1.15s ease-in-out infinite alternate}
-.of-splash-word{font:600 18px "Space Grotesk",sans-serif;letter-spacing:.08em;color:#e7edf8}
-.of-splash-word span{color:#9cb2dd}
-.of-splash-line{width:140px;height:2px;background:#141b28;overflow:hidden;border-radius:999px}
-.of-splash-line i{display:block;height:100%;width:45%;background:linear-gradient(90deg,#8197c9,#dbe5ff);border-radius:999px;animation:ofLoad 1s ease-in-out infinite}
-.adminops-brand-logo{width:34px;height:30px;object-fit:contain;filter:drop-shadow(0 0 10px rgba(160,190,255,.3))}
-@keyframes ofPulse{from{transform:translateY(0) scale(.98);opacity:.88}to{transform:translateY(-3px) scale(1.02);opacity:1}}
-@keyframes ofLoad{0%{transform:translateX(-120%)}100%{transform:translateX(310%)}}
-@media (prefers-reduced-motion:reduce){.of-splash-logo,.of-splash-line i{animation:none}}
+.of-splash-logo{width:88px;height:78px;filter:drop-shadow(0 0 24px rgba(168,191,255,.25));animation:ofPulse 1.15s ease-in-out infinite alternate}
+.of-splash-word{font:600 16px "Space Grotesk",sans-serif;letter-spacing:.03em;color:#eef2f8}
+.of-splash-word span{color:#9ce8d3}
+.of-splash-line{width:116px;height:2px;background:#15191d;overflow:hidden;border-radius:999px}
+.of-splash-line i{display:block;height:100%;width:42%;background:linear-gradient(90deg,#6e7c9b,#b8c7e7);border-radius:999px;animation:ofLoad 1s ease-in-out infinite}
+.adminops-brand-logo{width:34px;height:30px;object-fit:contain;filter:drop-shadow(0 0 8px rgba(160,190,255,.2))}
+@keyframes ofPulse{from{transform:translateY(0) scale(.99);opacity:.88}to{transform:translateY(-2px) scale(1.015);opacity:1}}
+@keyframes ofLoad{0%{transform:translateX(-120%)}100%{transform:translateX(300%)}}
+@media(max-width:1180px){
+  .topbar .nav{position:static;transform:none;margin-left:auto}
+}
+@media(max-width:980px){
+  .topbar .nav{display:none!important}
+  .topbar .brand{min-width:auto}
+}
+@media(max-width:620px){
+  .topbar{height:64px!important;padding:0 14px!important}
+  .topbar .brand strong{font-size:18px!important}
+  .brand-mark.orbitfind-mark{width:36px!important;height:32px!important}
+  .brand-mark.orbitfind-mark img{width:34px!important;height:30px!important}
+  .admin-entry{height:32px;padding:0 10px!important}
+}
+@media(prefers-reduced-motion:reduce){.of-splash-logo,.of-splash-line i{animation:none}}
