@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="theme-color" content="#070a10"/>
+<title>OrbitFind AgentOps — Admin Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="agentops.css"/>
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand"><span class="logo">◎</span><div><strong>OrbitFind</strong><small>AgentOps</small></div></div>
+    <div class="side-label">CONTROL</div>
+    <nav>
+      <a class="active" href="#overview">◫ <span>Overview</span></a>
+      <a href="#agents">◉ <span>Agent Monitor</span></a>
+      <a href="#pipeline">⌘ <span>Recovery Pipeline</span></a>
+      <a href="#queue">≣ <span>Case Queue</span></a>
+      <a href="#claims">◇ <span>Claims</span></a>
+      <a href="#health">△ <span>System Health</span></a>
+    </nav>
+    <div class="side-label">PROJECT</div>
+    <div class="system-card">
+      <div><i></i><strong>System Online</strong></div>
+      <small>Supabase + Vision pipeline</small>
+      <div class="mini-grid"><span>Agents <b>5/5</b></span><span>Mode <b>Live</b></span></div>
+    </div>
+    <a class="back-link" href="/">← Student app</a>
+  </aside>
+
+  <main>
+    <header class="topbar">
+      <div><span class="crumb">PCE Campus / Admin</span><h1>Agent Operations <i>LIVE</i></h1><p>Monitor AI recovery decisions, cases and system health.</p></div>
+      <div class="top-actions"><span class="health-pill">● All systems operational</span><button id="refreshBtn">↻ Refresh</button></div>
+    </header>
+
+    <section id="overview" class="kpis">
+      <article><span>Active Cases</span><strong id="kActive">0</strong><small>Currently searching</small></article>
+      <article><span>Match Seen</span><strong id="kMatched">0</strong><small>Awaiting verification</small></article>
+      <article><span>Recovered</span><strong id="kRecovered">0</strong><small>Closed cases</small></article>
+      <article><span>Found Reports</span><strong id="kFound">0</strong><small>Finder submissions</small></article>
+    </section>
+
+    <section class="grid-main">
+      <article id="pipeline" class="panel graph-panel">
+        <div class="panel-head"><div><small>RECOVERY ORCHESTRATION</small><h2>Agent decision graph</h2></div><span class="live-badge">● LIVE</span></div>
+        <div class="agent-graph">
+          <svg viewBox="0 0 900 470" aria-hidden="true">
+            <path d="M120 235 C220 235 220 120 350 120 S520 120 610 210" class="line cyan"/>
+            <path d="M120 235 C240 235 250 345 365 345 S520 345 610 260" class="line purple"/>
+            <path d="M610 235 C700 235 710 135 805 135" class="line mint"/>
+            <path d="M610 235 C700 235 710 340 805 340" class="line amber"/>
+          </svg>
+          <div class="node vision" style="left:6%;top:41%"><span>◉</span><b>Vision Agent</b><small>COCO-SSD</small><em>ONLINE</em></div>
+          <div class="node similarity" style="left:33%;top:13%"><span>✦</span><b>Similarity Agent</b><small>MobileNet</small><em>ONLINE</em></div>
+          <div class="node location" style="left:34%;top:66%"><span>⌖</span><b>Context Agent</b><small>Location + color</small><em>ONLINE</em></div>
+          <div class="node orchestrator" style="left:61%;top:39%"><span>◎</span><b>Recovery Orchestrator</b><small>Rank + explain</small><em>ACTIVE</em></div>
+          <div class="node verify" style="left:83%;top:16%"><span>✓</span><b>Verification</b><small>Human-in-loop</small><em>READY</em></div>
+          <div class="node sync" style="left:83%;top:69%"><span>⇅</span><b>Cloud Sync</b><small>Supabase</small><em>HEALTHY</em></div>
+        </div>
+      </article>
+
+      <article id="agents" class="panel activity-panel">
+        <div class="panel-head"><div><small>LIVE STREAM</small><h2>Agent activity</h2></div><span class="live-badge">● STREAM</span></div>
+        <div id="activityFeed" class="activity-feed"></div>
+      </article>
+    </section>
+
+    <section class="grid-secondary">
+      <article class="panel health-panel" id="health">
+        <div class="panel-head"><div><small>MODEL HEALTH</small><h2>Runtime status</h2></div></div>
+        <div class="health-list">
+          <div><span>Object Detection</span><b>COCO-SSD</b><em class="ok">READY</em></div>
+          <div><span>Visual Embeddings</span><b>MobileNet v2</b><em class="ok">READY</em></div>
+          <div><span>Database</span><b>Supabase</b><em class="ok" id="dbHealth">SYNCING</em></div>
+          <div><span>Decision Engine</span><b>Weighted ranking</b><em class="ok">ACTIVE</em></div>
+          <div><span>Verification</span><b>Human approval</b><em class="warn">GUARDED</em></div>
+        </div>
+      </article>
+      <article class="panel score-panel">
+        <div class="panel-head"><div><small>DECISION EXPLAINABILITY</small><h2>Match signal weights</h2></div></div>
+        <div class="bars">
+          <label><span>Visual similarity</span><b>50%</b><i><u style="width:50%"></u></i></label>
+          <label><span>Category baseline</span><b>30%</b><i><u style="width:30%"></u></i></label>
+          <label><span>Color evidence</span><b>10%</b><i><u style="width:10%"></u></i></label>
+          <label><span>Location context</span><b>5%</b><i><u style="width:5%"></u></i></label>
+          <label><span>Description clues</span><b>5%</b><i><u style="width:5%"></u></i></label>
+        </div>
+      </article>
+    </section>
+
+    <section id="queue" class="panel table-panel">
+      <div class="panel-head table-head"><div><small>RECOVERY QUEUE</small><h2>Live case processing</h2></div><input id="caseSearch" placeholder="Search case, item, location…"></div>
+      <div class="table-wrap">
+        <table><thead><tr><th>Case</th><th>Item</th><th>Stage</th><th>Last score</th><th>Location</th><th>Signals</th></tr></thead><tbody id="caseRows"></tbody></table>
+      </div>
+    </section>
+
+    <section id="claims" class="panel claims-panel">
+      <div class="panel-head"><div><small>HUMAN VERIFICATION</small><h2>Ownership safeguards</h2></div><span class="guard-pill">Human approval required</span></div>
+      <p>OrbitFind ranks candidate matches but does not decide ownership automatically. Admin/security verifies distinctive details before handover.</p>
+      <div class="guard-flow"><span>AI Candidate</span><b>→</b><span>Claim Review</span><b>→</b><span>Admin Verification</span><b>→</b><span>Recovered</span></div>
+    </section>
+  </main>
+</div>
+<div id="toast"></div>
+<script src="agentops.js"></script>
+</body>
+</html>
