@@ -30,3 +30,85 @@
 .admin-entry{border:1px solid rgba(105,240,208,.22);background:rgba(105,240,208,.06);color:var(--mint);border-radius:10px;padding:8px 11px;font:600 9px "DM Sans";letter-spacing:.06em;cursor:pointer}.admin-entry:hover{background:rgba(105,240,208,.11)}
 .admin-modal{position:fixed;inset:0;z-index:1200;background:rgba(2,6,12,.78);backdrop-filter:blur(14px);display:grid;place-items:center;padding:20px;opacity:0;visibility:hidden;transition:.2s}.admin-modal.open{opacity:1;visibility:visible}.admin-modal-card{width:min(420px,100%);position:relative;border:1px solid #263852;border-radius:20px;background:linear-gradient(180deg,#101827,#09111d);box-shadow:0 35px 100px #000b;padding:28px}.admin-modal-close{position:absolute;right:15px;top:13px;border:0;background:transparent;color:#6d7a8f;font-size:24px;cursor:pointer}.admin-lock{width:48px;height:48px;display:grid;place-items:center;border-radius:15px;background:linear-gradient(135deg,rgba(105,240,208,.14),rgba(101,191,255,.09));border:1px solid rgba(105,240,208,.18);color:var(--mint);font-size:22px}.admin-kicker{margin-top:16px;color:var(--mint);font-size:8px;font-weight:700;letter-spacing:.14em}.admin-modal-card h3{font:600 24px "Space Grotesk";margin:7px 0}.admin-modal-card p{color:var(--muted);font-size:10px;line-height:1.55;margin:0 0 18px}.admin-modal-card label span{display:block;color:#93a0b4;font-size:9px;margin-bottom:7px}.admin-modal-card input{width:100%;border:1px solid #293a54;background:#080f1a;color:#edf3fb;border-radius:11px;padding:12px 13px;outline:none;font:500 12px "DM Sans";margin-bottom:12px}.admin-modal-card input:focus{border-color:#4f8f8a;box-shadow:0 0 0 3px rgba(105,240,208,.06)}.admin-modal-card small{display:block;text-align:center;color:#5f6c80;font-size:8px;margin-top:11px}.admin-modal-card small.good{color:var(--mint)}.admin-modal-card small.bad{color:#ff7d8d}
 @media(max-width:720px){.admin-entry{padding:7px 9px}.admin-modal-card{padding:24px 20px}}
+
+/* polished image upload controls */
+.upload-field{gap:10px!important}
+.upload-label-row{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.upload-label-row>span{font-size:11px;color:#aeb9cb;font-weight:600}
+.upload-label-row>small{font-size:9px;color:#64748b;font-weight:500}
+.upload-dropzone{
+  min-height:88px;
+  display:grid;
+  grid-template-columns:46px 1fr auto;
+  align-items:center;
+  gap:14px;
+  padding:15px 16px;
+  border-radius:16px;
+  border:1px dashed #34445f;
+  background:linear-gradient(180deg,rgba(12,20,34,.86),rgba(8,14,24,.82));
+  cursor:pointer;
+  transition:border-color .2s ease,background .2s ease,transform .2s ease,box-shadow .2s ease;
+  position:relative;
+  overflow:hidden;
+}
+.upload-dropzone:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:radial-gradient(circle at 8% 50%,rgba(105,240,208,.07),transparent 28%);
+}
+.upload-dropzone:hover{
+  border-color:#4e6b8e;
+  background:linear-gradient(180deg,rgba(16,27,44,.94),rgba(9,16,27,.92));
+  transform:translateY(-1px);
+  box-shadow:0 10px 30px rgba(0,0,0,.18);
+}
+.upload-dropzone.has-file{
+  border-style:solid;
+  border-color:rgba(105,240,208,.34);
+  background:linear-gradient(180deg,rgba(15,34,38,.72),rgba(8,20,25,.78));
+}
+.upload-icon{
+  width:44px;height:44px;border-radius:13px;
+  display:grid;place-items:center;
+  color:var(--mint);
+  background:rgba(105,240,208,.07);
+  border:1px solid rgba(105,240,208,.15);
+  position:relative;z-index:1;
+}
+.upload-icon svg{width:22px;height:22px}
+.upload-copy{min-width:0;position:relative;z-index:1}
+.upload-copy strong{
+  display:block;
+  color:#e8edf6;
+  font:600 12px "DM Sans";
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.upload-copy small{
+  display:block;
+  margin-top:4px;
+  color:#728097;
+  font-size:9px;
+  line-height:1.35;
+}
+.upload-cta{
+  position:relative;z-index:1;
+  border:1px solid #314158;
+  background:#111a29;
+  color:#cbd6e6;
+  border-radius:10px;
+  padding:8px 11px;
+  font-size:9px!important;
+  font-weight:700!important;
+  white-space:nowrap;
+}
+.upload-dropzone:hover .upload-cta{border-color:#46627f;color:#edf4ff}
+.upload-dropzone.has-file .upload-cta{color:var(--mint);border-color:rgba(105,240,208,.25);background:rgba(105,240,208,.05)}
+@media(max-width:620px){
+  .upload-label-row{align-items:flex-start;flex-direction:column;gap:3px}
+  .upload-dropzone{grid-template-columns:42px 1fr;padding:14px;min-height:82px}
+  .upload-cta{grid-column:2;justify-self:start;margin-top:-2px}
+}
