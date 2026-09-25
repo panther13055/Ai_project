@@ -1,0 +1,1 @@
+(()=>{const s=document.getElementById('orbitfindSplash');if(!s)return;const seen=sessionStorage.getItem('orbitfind_splash_seen');const finish=()=>{s.classList.add('hide');setTimeout(()=>s.remove(),480);sessionStorage.setItem('orbitfind_splash_seen','1')};if(seen){s.remove();return}window.addEventListener('load',()=>setTimeout(finish,700),{once:true});setTimeout(finish,1500)})();
