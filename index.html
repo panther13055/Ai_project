@@ -10,19 +10,16 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
-  <link rel="stylesheet" href="cases-enhanced.css" />
+  <link rel="stylesheet" href="cases-enhanced.css" />\n  <link rel="stylesheet" href="brand-enhanced.css" />\n  <link rel="icon" type="image/svg+xml" href="orbitfind-mark.svg" />
 </head>
-<body>
+<body>\n  <div class="of-splash" id="orbitfindSplash"><div class="of-splash-inner"><img class="of-splash-logo" src="orbitfind-mark.svg" alt="OrbitFind" /><div class="of-splash-word">OrbitFind <span>AI</span></div><div class="of-splash-line"><i></i></div></div></div>
   <div class="noise"></div>
   <div class="aurora aurora-a"></div>
   <div class="aurora aurora-b"></div>
 
   <header class="topbar">
     <a class="brand" href="#home" aria-label="OrbitFind AI home">
-      <span class="brand-mark" aria-hidden="true">
-        <svg viewBox="0 0 44 44" fill="none"><path d="M22 5.5c8.95 0 16.2 7.25 16.2 16.2S30.95 37.9 22 37.9 5.8 30.65 5.8 21.7 13.05 5.5 22 5.5Z" stroke="currentColor" stroke-width="1.5" opacity=".55"/><path d="M31.5 15.1c2.35 2.35 2.35 6.15 0 8.5L23.6 31.5c-2.35 2.35-6.15 2.35-8.5 0s-2.35-6.15 0-8.5l7.9-7.9c2.35-2.35 6.15-2.35 8.5 0Z" fill="currentColor" opacity=".9"/><circle cx="13.7" cy="13.7" r="2.7" fill="currentColor"/></svg>
-      </span>
-      <span><strong>OrbitFind</strong><em>AI</em></span>
+      <span class="brand-mark orbitfind-mark" aria-hidden="true"><img src="orbitfind-mark.svg" alt="" /></span>\n      <span><strong>OrbitFind</strong><em>AI</em></span>
     </a>
     <nav class="nav" aria-label="Primary navigation">
       <a href="#home" class="nav-link active">Overview</a>
@@ -143,7 +140,7 @@
     <section class="section how-section"><div class="how-card reveal"><div class="eyebrow">End-to-end recovery</div><div class="how-grid"><div class="how-step"><span>01</span><h3>Register</h3><p>Create the lost-item profile and visual fingerprint.</p></div><div class="how-arrow">→</div><div class="how-step"><span>02</span><h3>Detect</h3><p>Scan with phone camera or analyze an uploaded image.</p></div><div class="how-arrow">→</div><div class="how-step"><span>03</span><h3>Match</h3><p>Rank found reports against open lost cases.</p></div><div class="how-arrow">→</div><div class="how-step"><span>04</span><h3>Verify</h3><p>Review identifying details before handover.</p></div><div class="how-arrow">→</div><div class="how-step"><span>05</span><h3>Recover</h3><p>Close the case and remove it from active matching.</p></div></div></div></section>
   </main>
 
-  <footer><a class="brand footer-brand" href="#home"><span class="brand-mark small"><svg viewBox="0 0 44 44" fill="none"><path d="M22 5.5c8.95 0 16.2 7.25 16.2 16.2S30.95 37.9 22 37.9 5.8 30.65 5.8 21.7 13.05 5.5 22 5.5Z" stroke="currentColor" stroke-width="1.5" opacity=".55"/><path d="M31.5 15.1c2.35 2.35 2.35 6.15 0 8.5L23.6 31.5c-2.35 2.35-6.15 2.35-8.5 0s-2.35-6.15 0-8.5l7.9-7.9c2.35-2.35 6.15-2.35 8.5 0Z" fill="currentColor" opacity=".9"/></svg></span><span><strong>OrbitFind</strong><em>AI</em></span></a><p>AI Lost & Found · Computer Vision Prototype</p><span>PCE campus prototype · 2026</span></footer>
+  <footer><a class="brand footer-brand" href="#home"><span class="brand-mark small orbitfind-mark"><img src="orbitfind-mark.svg" alt="" /></span><span><strong>OrbitFind</strong><em>AI</em></span></a><p>AI Lost & Found · Computer Vision Prototype</p><span>PCE campus prototype · 2026</span></footer>
 
   <div class="admin-modal" id="adminModal" aria-hidden="true">
     <div class="admin-modal-card" role="dialog" aria-modal="true" aria-labelledby="adminModalTitle">
@@ -166,6 +163,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.1"></script>
   <script src="app.js"></script>
   <script src="cases-enhanced.js"></script>
-  <script src="admin-gate.js"></script>
+  <script src="admin-gate.js"></script>\n  <script src="brand-enhanced.js"></script>
 </body>
 </html>
