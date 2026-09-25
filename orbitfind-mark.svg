@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 140" role="img" aria-label="OrbitFind logo">
+  <defs>
+    <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#d9e2ff"/>
+      <stop offset=".42" stop-color="#94a5cb"/>
+      <stop offset="1" stop-color="#5b6d99"/>
+    </linearGradient>
+    <linearGradient id="visor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#111827"/>
+      <stop offset="1" stop-color="#060b14"/>
+    </linearGradient>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="6" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <g filter="url(#glow)">
+    <path d="M20 26v17c0 6 2 11 7 15l5 4v34c0 13 10 23 23 23h50c13 0 23-10 23-23V62l5-4c5-4 7-9 7-15V26h-12v13H32V26z" fill="url(#metal)"/>
+    <rect x="42" y="52" width="76" height="50" rx="16" fill="url(#visor)"/>
+    <path d="M57 66h20l-7 14c-3 6-1 12 5 15 5 3 11 1 14-4l6-12 6 12c3 5 9 7 14 4 6-3 8-9 5-15l-7-14h20" fill="none" stroke="#0b1020" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="80" cy="122" r="3.5" fill="#9fe9ff" opacity=".7"/>
+  </g>
+</svg>
