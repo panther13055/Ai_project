@@ -1,6 +1,9 @@
 <!doctype html>
 <html lang="en">
 <head>
+<script>
+if(sessionStorage.getItem('orbitfind_admin_ok')!=='1'){location.replace('/#admin');}
+</script>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <meta name="theme-color" content="#070a10"/>
@@ -35,7 +38,7 @@
   <main>
     <header class="topbar">
       <div><span class="crumb">PCE Campus / Admin</span><h1>Agent Operations <i>LIVE</i></h1><p>Monitor AI recovery decisions, cases and system health.</p></div>
-      <div class="top-actions"><span class="health-pill">● All systems operational</span><button id="refreshBtn">↻ Refresh</button></div>
+      <div class="top-actions"><span class="health-pill">● All systems operational</span><button id="refreshBtn">↻ Refresh</button><button id="logoutBtn">Lock</button></div>
     </header>
 
     <section id="overview" class="kpis">
@@ -109,5 +112,8 @@
 </div>
 <div id="toast"></div>
 <script src="agentops.js"></script>
+<script>
+document.getElementById('logoutBtn')?.addEventListener('click',()=>{sessionStorage.removeItem('orbitfind_admin_ok');location.replace('/');});
+</script>
 </body>
 </html>
