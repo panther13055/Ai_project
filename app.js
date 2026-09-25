@@ -51,10 +51,11 @@ const saveCases = (v) => localStorage.setItem('orbitfind_cases', JSON.stringify(
 
 function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._x); t._x=setTimeout(()=>t.classList.remove('show'),2400); }
 function caseId(){ return `OF-${String(Date.now()).slice(-4)}`; }
-function currentCase(){ const arr=storedCases(); return arr[arr.length-1] || null; }
+function currentCase(){ const arr=storedCases(); return [...arr].reverse().find(x=>x.status!=='recovered') || arr[arr.length-1] || null; }
 function cloudToLocal(row){ const sightings=(row.sightings||[]).slice().sort((a,b)=>new Date(a.created_at)-new Date(b.created_at)); const last=sightings[sightings.length-1]; return {id:row.case_code,cloud_id:row.id,category:row.category,color:row.color,details:row.details||'',location:row.last_seen_location,created:new Date(row.created_at).getTime(),status:row.status,reference_embedding:Array.isArray(row.reference_embedding)?row.reference_embedding:null,sightings:sightings.map(s=>({at:new Date(s.created_at).getTime(),confidence:s.confidence,color:s.detected_color,source:s.source})),lastSighting:last?{at:new Date(last.created_at).getTime(),confidence:last.confidence,color:last.detected_color,source:last.source}:undefined}; }
 async function syncFromCloud(){ try{ const data=await cloudCall({action:'list_cases'}); const remote=(data.cases||[]).map(cloudToLocal).sort((a,b)=>a.created-b.created); if(remote.length){ saveCases(remote); renderCases(); updateTarget(); } return true; }catch(err){ console.warn('Cloud sync unavailable',err); return false; } }
 function pretty(s){ return (s||'').replace(/\b\w/g,c=>c.toUpperCase()); }
+function escHtml(v){ return String(v??'').replace(/[&<>\"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[m])); }
 async function ensureSimilarityModel(){ if(similarityModel) return similarityModel; await tf.ready(); similarityModel=await mobilenet.load({version:2,alpha:0.5}); return similarityModel; }
 async function embeddingFromElement(el){ const m=await ensureSimilarityModel(); const t=m.infer(el,true); const v=Array.from(await t.data()); t.dispose(); return v; }
 function cosineSimilarity(a,b){ if(!a||!b||a.length!==b.length||!a.length)return null; let d=0,aa=0,bb=0; for(let i=0;i<a.length;i++){d+=a[i]*b[i];aa+=a[i]*a[i];bb+=b[i]*b[i];} return aa&&bb?d/(Math.sqrt(aa)*Math.sqrt(bb)):null; }
@@ -249,17 +250,31 @@ async function drawPredictions(source,preds,singleImage=false){
   }
   $('#visualSimilarity').textContent=visualSimilarity===null?'—':visualSimilarity+'%';
   if(best?.isTarget){
-    consecutiveMatches=singleImage?VERIFY_FRAMES:Math.min(VERIFY_FRAMES,consecutiveMatches+1);
-    $('#verificationCount').textContent=consecutiveMatches+' / '+VERIFY_FRAMES;
     if(visualSimilarity!==null) best.score=Math.max(1,Math.min(99,Math.round(best.score*0.62+visualSimilarity*0.38)));
     $('#bestMatch').textContent=pretty(best.class); $('#matchConfidence').textContent=best.score+'%';
-    if(consecutiveMatches>=VERIFY_FRAMES){
-      rs.className='result-state good'; rs.querySelector('strong').textContent='Verified potential match';
-      setAgent('MATCH VERIFIED','Repeated detections confirm a likely '+pretty(targetCat)+'. This is a candidate match, not proof of exact identity; review it before recovery.',[best.colorHit?'Color matched: '+pretty(targetColor):'Color estimate: '+pretty(best.color),visualSimilarity!==null?'Visual similarity: '+visualSimilarity+'%':'No reference photo','Repeated visual confirmation',best.score+'% combined score']);
-      recordSighting(best.score,best.color); if(navigator.vibrate) navigator.vibrate([80,50,80]);
+
+    if(singleImage){
+      consecutiveMatches=0;
+      $('#verificationCount').textContent='Image';
+      rs.className='result-state warn';
+      rs.querySelector('strong').textContent='Image candidate found';
+      setAgent('IMAGE CANDIDATE','A likely '+pretty(targetCat)+' appears in this image. Live multi-frame verification is not available for a single photo.',[
+        best.colorHit?'Color matched: '+pretty(targetColor):'Color estimate: '+pretty(best.color),
+        visualSimilarity!==null?'Visual similarity: '+visualSimilarity+'%':'No reference photo',
+        best.score+'% combined candidate score',
+        'Use live camera for 3-frame verification'
+      ]);
     } else {
-      rs.className='result-state warn'; rs.querySelector('strong').textContent='Verifying candidate';
-      setAgent('VERIFYING','Possible '+pretty(targetCat)+' detected. Waiting for '+(VERIFY_FRAMES-consecutiveMatches)+' more stable confirmation(s).',['Category match',visualSimilarity!==null?'Visual similarity: '+visualSimilarity+'%':'Reference similarity pending','Temporal verification running']);
+      consecutiveMatches=Math.min(VERIFY_FRAMES,consecutiveMatches+1);
+      $('#verificationCount').textContent=consecutiveMatches+' / '+VERIFY_FRAMES;
+      if(consecutiveMatches>=VERIFY_FRAMES){
+        rs.className='result-state good'; rs.querySelector('strong').textContent='Verified potential match';
+        setAgent('MATCH VERIFIED','Repeated detections confirm a likely '+pretty(targetCat)+'. This is a candidate match, not proof of exact identity; review it before recovery.',[best.colorHit?'Color matched: '+pretty(targetColor):'Color estimate: '+pretty(best.color),visualSimilarity!==null?'Visual similarity: '+visualSimilarity+'%':'No reference photo','Repeated visual confirmation',best.score+'% combined score']);
+        recordSighting(best.score,best.color); if(navigator.vibrate) navigator.vibrate([80,50,80]);
+      } else {
+        rs.className='result-state warn'; rs.querySelector('strong').textContent='Verifying candidate';
+        setAgent('VERIFYING','Possible '+pretty(targetCat)+' detected. Waiting for '+(VERIFY_FRAMES-consecutiveMatches)+' more stable confirmation(s).',['Category match',visualSimilarity!==null?'Visual similarity: '+visualSimilarity+'%':'Reference similarity pending','Temporal verification running']);
+      }
     }
   } else if(best){
     consecutiveMatches=Math.max(0,consecutiveMatches-1); $('#verificationCount').textContent=consecutiveMatches+' / '+VERIFY_FRAMES;
@@ -323,11 +338,11 @@ function renderFinderMatches(matches){
   }
   list.innerHTML=matches.map((m,i)=>`
     <article class="match-card">
-      <div class="match-card-top"><span class="match-rank">CANDIDATE #${i+1} · ${m.case_code}</span><span class="match-score">${m.score}%</span></div>
-      <h4>${pretty(m.color)} ${pretty(m.category)}</h4>
-      <p>${m.visual_similarity!==null&&m.visual_similarity!==undefined ? 'Visual similarity '+m.visual_similarity+'%' : 'Matched without reference-photo similarity'}</p>
-      <div class="reason-row">${(m.reasons||[]).map(r=>'<span>'+r+'</span>').join('')}</div>
-      <div class="match-location">Lost near: ${m.last_seen_location}</div>
+      <div class="match-card-top"><span class="match-rank">CANDIDATE #${i+1} · ${escHtml(m.case_code)}</span><span class="match-score">${Number(m.score)||0}%</span></div>
+      <h4>${escHtml(pretty(m.color))} ${escHtml(pretty(m.category))}</h4>
+      <p>${m.visual_similarity!==null&&m.visual_similarity!==undefined ? 'Visual similarity '+(Number(m.visual_similarity)||0)+'%' : 'Matched without reference-photo similarity'}</p>
+      <div class="reason-row">${(m.reasons||[]).map(r=>'<span>'+escHtml(r)+'</span>').join('')}</div>
+      <div class="match-location">Lost near: ${escHtml(m.last_seen_location)}</div>
     </article>
   `).join('');
 }
