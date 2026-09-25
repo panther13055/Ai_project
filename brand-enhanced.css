@@ -1,0 +1,15 @@
+.brand-mark.orbitfind-mark{display:inline-grid;place-items:center;width:48px;height:44px;flex:0 0 auto}
+.brand-mark.orbitfind-mark img{display:block;width:46px;height:40px;object-fit:contain;filter:drop-shadow(0 0 10px rgba(159,190,255,.32))}
+.footer-brand .brand-mark.orbitfind-mark{width:42px;height:38px}.footer-brand .brand-mark.orbitfind-mark img{width:40px;height:34px}
+.of-splash{position:fixed;inset:0;z-index:5000;display:grid;place-items:center;background:#070a10;transition:opacity .45s ease,visibility .45s ease}
+.of-splash.hide{opacity:0;visibility:hidden}
+.of-splash-inner{display:flex;flex-direction:column;align-items:center;gap:14px}
+.of-splash-logo{width:108px;height:94px;filter:drop-shadow(0 0 28px rgba(150,190,255,.38));animation:ofPulse 1.15s ease-in-out infinite alternate}
+.of-splash-word{font:600 18px "Space Grotesk",sans-serif;letter-spacing:.08em;color:#e7edf8}
+.of-splash-word span{color:#9cb2dd}
+.of-splash-line{width:140px;height:2px;background:#141b28;overflow:hidden;border-radius:999px}
+.of-splash-line i{display:block;height:100%;width:45%;background:linear-gradient(90deg,#8197c9,#dbe5ff);border-radius:999px;animation:ofLoad 1s ease-in-out infinite}
+.adminops-brand-logo{width:34px;height:30px;object-fit:contain;filter:drop-shadow(0 0 10px rgba(160,190,255,.3))}
+@keyframes ofPulse{from{transform:translateY(0) scale(.98);opacity:.88}to{transform:translateY(-3px) scale(1.02);opacity:1}}
+@keyframes ofLoad{0%{transform:translateX(-120%)}100%{transform:translateX(310%)}}
+@media (prefers-reduced-motion:reduce){.of-splash-logo,.of-splash-line i{animation:none}}
