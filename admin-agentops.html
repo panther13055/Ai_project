@@ -11,9 +11,12 @@ if(sessionStorage.getItem('orbitfind_admin_ok')!=='1'){location.replace('/#admin
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="agentops.css"/>\n<link rel="stylesheet" href="brand-enhanced.css"/>\n<link rel="icon" type="image/svg+xml" href="orbitfind-mark.svg"/>
+<link rel="stylesheet" href="agentops.css"/>
+<link rel="stylesheet" href="brand-enhanced.css"/>
+<link rel="icon" type="image/svg+xml" href="orbitfind-mark.svg"/>
 </head>
-<body>\n<div class="of-splash" id="orbitfindSplash"><div class="of-splash-inner"><img class="of-splash-logo" src="orbitfind-mark.svg" alt="OrbitFind" /><div class="of-splash-word">OrbitFind <span>AgentOps</span></div><div class="of-splash-line"><i></i></div></div></div>
+<body>
+<div class="of-splash" id="orbitfindSplash"><div class="of-splash-inner"><img class="of-splash-logo" src="orbitfind-mark.svg" alt="OrbitFind" /><div class="of-splash-word">OrbitFind <span>AgentOps</span></div><div class="of-splash-line"><i></i></div></div></div>
 <div class="shell">
   <aside class="sidebar">
     <div class="brand"><img class="adminops-brand-logo" src="orbitfind-mark.svg" alt="OrbitFind"><div><strong>OrbitFind</strong><small>AgentOps</small></div></div>
@@ -111,7 +114,8 @@ if(sessionStorage.getItem('orbitfind_admin_ok')!=='1'){location.replace('/#admin
   </main>
 </div>
 <div id="toast"></div>
-<script src="agentops.js"></script>\n<script src="brand-enhanced.js"></script>
+<script src="agentops.js"></script>
+<script src="brand-enhanced.js"></script>
 <script>
 document.getElementById('logoutBtn')?.addEventListener('click',()=>{sessionStorage.removeItem('orbitfind_admin_ok');location.replace('/');});
 </script>
