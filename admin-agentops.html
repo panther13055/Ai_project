@@ -23,7 +23,7 @@ if(sessionStorage.getItem('orbitfind_admin_ok')!=='1'){location.replace('/#admin
     <div class="side-label">CONTROL</div>
     <nav>
       <a class="active" href="#overview">◫ <span>Overview</span></a>
-      <a href="#agents">◉ <span>System Monitor</span></a>
+      <a href="#agents">◉ <span>Agent Monitor</span></a>
       <a href="#pipeline">⌘ <span>Recovery Pipeline</span></a>
       <a href="#queue">≣ <span>Case Queue</span></a>
       <a href="#claims">◇ <span>Claims</span></a>
@@ -33,7 +33,7 @@ if(sessionStorage.getItem('orbitfind_admin_ok')!=='1'){location.replace('/#admin
     <div class="system-card">
       <div><i></i><strong>System Online</strong></div>
       <small>Supabase + Vision pipeline</small>
-      <div class="mini-grid"><span>Services <b>5/5</b></span><span>Mode <b>Live</b></span></div>
+      <div class="mini-grid"><span>Agents <b id="sidebarAgentCount">7/7</b></span><span>Mode <b id="sidebarMode">Live</b></span></div>
     </div>
     <a class="back-link" href="/">← Student app</a>
   </aside>
@@ -55,18 +55,22 @@ if(sessionStorage.getItem('orbitfind_admin_ok')!=='1'){location.replace('/#admin
       <article id="pipeline" class="panel graph-panel">
         <div class="panel-head"><div><small>RECOVERY ORCHESTRATION</small><h2>Recovery decision graph</h2></div><span class="live-badge">● LIVE</span></div>
         <div class="agent-graph">
-          <svg viewBox="0 0 900 470" aria-hidden="true">
-            <path d="M120 235 C220 235 220 120 350 120 S520 120 610 210" class="line cyan"/>
-            <path d="M120 235 C240 235 250 345 365 345 S520 345 610 260" class="line purple"/>
-            <path d="M610 235 C700 235 710 135 805 135" class="line mint"/>
-            <path d="M610 235 C700 235 710 340 805 340" class="line amber"/>
+          <svg viewBox="0 0 1000 520" aria-hidden="true">
+            <path d="M115 130 C230 130 250 230 390 230" class="line cyan"/>
+            <path d="M115 260 C230 260 250 245 390 245" class="line purple"/>
+            <path d="M115 390 C235 390 255 275 390 260" class="line amber"/>
+            <path d="M520 245 C640 245 650 135 775 135" class="line mint"/>
+            <path d="M520 245 C650 245 650 255 775 255" class="line cyan"/>
+            <path d="M520 245 C640 245 650 385 775 385" class="line purple"/>
+            <path d="M885 255 C935 255 945 335 945 390" class="line amber"/>
           </svg>
-          <div class="node vision" style="left:6%;top:41%"><span>◉</span><b>Vision</b><small>COCO-SSD</small><em>ONLINE</em></div>
-          <div class="node similarity" style="left:33%;top:13%"><span>✦</span><b>Visual Similarity</b><small>MobileNet</small><em>ONLINE</em></div>
-          <div class="node location" style="left:34%;top:66%"><span>⌖</span><b>Context</b><small>Location + color</small><em>ONLINE</em></div>
-          <div class="node orchestrator" style="left:61%;top:39%"><span>◎</span><b>Recovery Orchestrator</b><small>Rank + explain</small><em>ACTIVE</em></div>
-          <div class="node verify" style="left:83%;top:16%"><span>✓</span><b>Verification</b><small>Human-in-loop</small><em>READY</em></div>
-          <div class="node sync" style="left:83%;top:69%"><span>⇅</span><b>Cloud Sync</b><small>Supabase</small><em>HEALTHY</em></div>
+          <div class="node vision" data-agent-node="vision" style="left:11%;top:25%"><span>◉</span><b>Vision Detection</b><small>COCO-SSD</small><em>READY</em></div>
+          <div class="node similarity" data-agent-node="similarity" style="left:11%;top:50%"><span>✦</span><b>Visual Similarity</b><small>MobileNet v2</small><em>READY</em></div>
+          <div class="node location" data-agent-node="context" style="left:11%;top:75%"><span>⌖</span><b>Context Matching</b><small>Color + location + text</small><em>READY</em></div>
+          <div class="node orchestrator" data-agent-node="explanation" style="left:46%;top:48%"><span>◎</span><b>Match Explanation</b><small>Rank + reasons + score</small><em>ONLINE</em></div>
+          <div class="node notify" data-agent-node="notification" style="left:79%;top:25%"><span>↯</span><b>Notification</b><small>Match alerts</small><em>ONLINE</em></div>
+          <div class="node verify" data-agent-node="security" style="left:79%;top:49%"><span>✓</span><b>Security Desk</b><small>Human verification</small><em>ONLINE</em></div>
+          <div class="node sync" data-agent-node="fallback" style="left:79%;top:74%"><span>⇅</span><b>Fallback & Sync</b><small>Supabase + local cache</small><em>ONLINE</em></div>
         </div>
       </article>
 
@@ -74,6 +78,21 @@ if(sessionStorage.getItem('orbitfind_admin_ok')!=='1'){location.replace('/#admin
         <div class="panel-head"><div><small>LIVE STREAM</small><h2>Recovery activity</h2></div><span class="live-badge">● STREAM</span></div>
         <div id="activityFeed" class="activity-feed"></div>
       </article>
+    </section>
+
+
+    <section class="panel agent-monitor-panel">
+      <div class="panel-head"><div><small>AGENT RUNTIME MONITOR</small><h2>Live agent status & observed uptime</h2></div><div class="monitor-meta"><span id="monitorLastCheck">Waiting for first check…</span><span id="monitorLatency">— ms</span></div></div>
+      <p class="monitor-note">Uptime and downtime below are measured from the moment this Security Desk page is opened; they are not historical service-level statistics.</p>
+      <div class="agent-runtime-grid" id="agentRuntimeGrid">
+        <article class="runtime-card" data-runtime-agent="vision"><div class="runtime-top"><span class="runtime-icon">◉</span><div><strong>Vision Detection</strong><small>COCO-SSD object detection</small></div><em>READY</em></div><div class="runtime-stats"><span>Observed uptime<b data-up>00:00:00</b></span><span>Downtime<b data-down>00:00:00</b></span><span>Availability<b data-pct>100%</b></span></div></article>
+        <article class="runtime-card" data-runtime-agent="similarity"><div class="runtime-top"><span class="runtime-icon">✦</span><div><strong>Visual Similarity</strong><small>MobileNet embeddings</small></div><em>READY</em></div><div class="runtime-stats"><span>Observed uptime<b data-up>00:00:00</b></span><span>Downtime<b data-down>00:00:00</b></span><span>Availability<b data-pct>100%</b></span></div></article>
+        <article class="runtime-card" data-runtime-agent="context"><div class="runtime-top"><span class="runtime-icon">⌖</span><div><strong>Context Matching</strong><small>Location, color & description</small></div><em>ONLINE</em></div><div class="runtime-stats"><span>Observed uptime<b data-up>00:00:00</b></span><span>Downtime<b data-down>00:00:00</b></span><span>Availability<b data-pct>100%</b></span></div></article>
+        <article class="runtime-card" data-runtime-agent="explanation"><div class="runtime-top"><span class="runtime-icon">◎</span><div><strong>Match Explanation</strong><small>Ranking & evidence breakdown</small></div><em>ONLINE</em></div><div class="runtime-stats"><span>Observed uptime<b data-up>00:00:00</b></span><span>Downtime<b data-down>00:00:00</b></span><span>Availability<b data-pct>100%</b></span></div></article>
+        <article class="runtime-card" data-runtime-agent="notification"><div class="runtime-top"><span class="runtime-icon">↯</span><div><strong>Notification</strong><small>Realtime match alert polling</small></div><em>ONLINE</em></div><div class="runtime-stats"><span>Observed uptime<b data-up>00:00:00</b></span><span>Downtime<b data-down>00:00:00</b></span><span>Availability<b data-pct>100%</b></span></div></article>
+        <article class="runtime-card" data-runtime-agent="security"><div class="runtime-top"><span class="runtime-icon">✓</span><div><strong>Security Desk</strong><small>Claim & handover verification</small></div><em>ONLINE</em></div><div class="runtime-stats"><span>Observed uptime<b data-up>00:00:00</b></span><span>Downtime<b data-down>00:00:00</b></span><span>Availability<b data-pct>100%</b></span></div></article>
+        <article class="runtime-card" data-runtime-agent="fallback"><div class="runtime-top"><span class="runtime-icon">⇅</span><div><strong>Fallback & Sync</strong><small>Cloud sync + local recovery cache</small></div><em>ONLINE</em></div><div class="runtime-stats"><span>Observed uptime<b data-up>00:00:00</b></span><span>Downtime<b data-down>00:00:00</b></span><span>Availability<b data-pct>100%</b></span></div></article>
+      </div>
     </section>
 
     <section class="grid-secondary">
@@ -85,6 +104,7 @@ if(sessionStorage.getItem('orbitfind_admin_ok')!=='1'){location.replace('/#admin
           <div><span>Database</span><b>Supabase</b><em class="ok" id="dbHealth">SYNCING</em></div>
           <div><span>Decision Engine</span><b>Weighted ranking</b><em class="ok">ACTIVE</em></div>
           <div><span>Verification</span><b>Human approval</b><em class="warn">GUARDED</em></div>
+          <div><span>Agent monitor</span><b>7 logical modules</b><em class="ok" id="agentHealth">CHECKING</em></div>
         </div>
       </article>
       <article class="panel score-panel">
