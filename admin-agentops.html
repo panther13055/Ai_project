@@ -7,7 +7,7 @@ if(sessionStorage.getItem('orbitfind_admin_ok')!=='1'){location.replace('/#admin
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <meta name="theme-color" content="#070a10"/>
-<title>OrbitFind AgentOps — Admin Console</title>
+<title>OrbitFind Security Desk — Admin Console</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
@@ -16,14 +16,14 @@ if(sessionStorage.getItem('orbitfind_admin_ok')!=='1'){location.replace('/#admin
 <link rel="icon" type="image/svg+xml" href="orbitfind-mark.svg"/>
 </head>
 <body>
-<div class="of-splash" id="orbitfindSplash"><div class="of-splash-inner"><img class="of-splash-logo" src="orbitfind-mark.svg" alt="OrbitFind" /><div class="of-splash-word">OrbitFind <span>AgentOps</span></div><div class="of-splash-line"><i></i></div></div></div>
+<div class="of-splash" id="orbitfindSplash"><div class="of-splash-inner"><img class="of-splash-logo" src="orbitfind-mark.svg" alt="OrbitFind" /><div class="of-splash-word">OrbitFind <span>Security Desk</span></div><div class="of-splash-line"><i></i></div></div></div>
 <div class="shell">
   <aside class="sidebar">
-    <div class="brand"><img class="adminops-brand-logo" src="orbitfind-mark.svg" alt="OrbitFind"><div><strong>OrbitFind</strong><small>AgentOps</small></div></div>
+    <div class="brand"><img class="adminops-brand-logo" src="orbitfind-mark.svg" alt="OrbitFind"><div><strong>OrbitFind</strong><small>Security Desk</small></div></div>
     <div class="side-label">CONTROL</div>
     <nav>
       <a class="active" href="#overview">◫ <span>Overview</span></a>
-      <a href="#agents">◉ <span>Agent Monitor</span></a>
+      <a href="#agents">◉ <span>System Monitor</span></a>
       <a href="#pipeline">⌘ <span>Recovery Pipeline</span></a>
       <a href="#queue">≣ <span>Case Queue</span></a>
       <a href="#claims">◇ <span>Claims</span></a>
@@ -33,14 +33,14 @@ if(sessionStorage.getItem('orbitfind_admin_ok')!=='1'){location.replace('/#admin
     <div class="system-card">
       <div><i></i><strong>System Online</strong></div>
       <small>Supabase + Vision pipeline</small>
-      <div class="mini-grid"><span>Agents <b>5/5</b></span><span>Mode <b>Live</b></span></div>
+      <div class="mini-grid"><span>Services <b>5/5</b></span><span>Mode <b>Live</b></span></div>
     </div>
     <a class="back-link" href="/">← Student app</a>
   </aside>
 
   <main>
     <header class="topbar">
-      <div><span class="crumb">PCE Campus / Admin</span><h1>Agent Operations <i>LIVE</i></h1><p>Monitor AI recovery decisions, cases and system health.</p></div>
+      <div><span class="crumb">PCE Campus / Admin</span><h1>Security Operations <i>LIVE</i></h1><p>Review recovery decisions, secure handovers, cases and system health.</p></div>
       <div class="top-actions"><span class="health-pill">● All systems operational</span><button id="refreshBtn">↻ Refresh</button><button id="logoutBtn">Lock</button></div>
     </header>
 
@@ -53,7 +53,7 @@ if(sessionStorage.getItem('orbitfind_admin_ok')!=='1'){location.replace('/#admin
 
     <section class="grid-main">
       <article id="pipeline" class="panel graph-panel">
-        <div class="panel-head"><div><small>RECOVERY ORCHESTRATION</small><h2>Agent decision graph</h2></div><span class="live-badge">● LIVE</span></div>
+        <div class="panel-head"><div><small>RECOVERY ORCHESTRATION</small><h2>Recovery decision graph</h2></div><span class="live-badge">● LIVE</span></div>
         <div class="agent-graph">
           <svg viewBox="0 0 900 470" aria-hidden="true">
             <path d="M120 235 C220 235 220 120 350 120 S520 120 610 210" class="line cyan"/>
@@ -61,9 +61,9 @@ if(sessionStorage.getItem('orbitfind_admin_ok')!=='1'){location.replace('/#admin
             <path d="M610 235 C700 235 710 135 805 135" class="line mint"/>
             <path d="M610 235 C700 235 710 340 805 340" class="line amber"/>
           </svg>
-          <div class="node vision" style="left:6%;top:41%"><span>◉</span><b>Vision Agent</b><small>COCO-SSD</small><em>ONLINE</em></div>
-          <div class="node similarity" style="left:33%;top:13%"><span>✦</span><b>Similarity Agent</b><small>MobileNet</small><em>ONLINE</em></div>
-          <div class="node location" style="left:34%;top:66%"><span>⌖</span><b>Context Agent</b><small>Location + color</small><em>ONLINE</em></div>
+          <div class="node vision" style="left:6%;top:41%"><span>◉</span><b>Vision</b><small>COCO-SSD</small><em>ONLINE</em></div>
+          <div class="node similarity" style="left:33%;top:13%"><span>✦</span><b>Visual Similarity</b><small>MobileNet</small><em>ONLINE</em></div>
+          <div class="node location" style="left:34%;top:66%"><span>⌖</span><b>Context</b><small>Location + color</small><em>ONLINE</em></div>
           <div class="node orchestrator" style="left:61%;top:39%"><span>◎</span><b>Recovery Orchestrator</b><small>Rank + explain</small><em>ACTIVE</em></div>
           <div class="node verify" style="left:83%;top:16%"><span>✓</span><b>Verification</b><small>Human-in-loop</small><em>READY</em></div>
           <div class="node sync" style="left:83%;top:69%"><span>⇅</span><b>Cloud Sync</b><small>Supabase</small><em>HEALTHY</em></div>
@@ -71,7 +71,7 @@ if(sessionStorage.getItem('orbitfind_admin_ok')!=='1'){location.replace('/#admin
       </article>
 
       <article id="agents" class="panel activity-panel">
-        <div class="panel-head"><div><small>LIVE STREAM</small><h2>Agent activity</h2></div><span class="live-badge">● STREAM</span></div>
+        <div class="panel-head"><div><small>LIVE STREAM</small><h2>Recovery activity</h2></div><span class="live-badge">● STREAM</span></div>
         <div id="activityFeed" class="activity-feed"></div>
       </article>
     </section>
@@ -104,6 +104,12 @@ if(sessionStorage.getItem('orbitfind_admin_ok')!=='1'){location.replace('/#admin
       <div class="table-wrap">
         <table><thead><tr><th>Case</th><th>Item</th><th>Stage</th><th>Last score</th><th>Location</th><th>Signals</th></tr></thead><tbody id="caseRows"></tbody></table>
       </div>
+    </section>
+
+    <section id="handoverDesk" class="panel claims-panel">
+      <div class="panel-head"><div><small>PRIVATE HANDOVER</small><h2>Security Desk queue</h2></div><span class="guard-pill">No personal contact exposed</span></div>
+      <p>Review secure handover requests. Approval creates a temporary 6-digit code for in-person verification instead of sharing phone numbers or email addresses.</p>
+      <div id="handoverQueue"><div class="guard-flow"><span>Waiting for requests</span></div></div>
     </section>
 
     <section id="claims" class="panel claims-panel">
