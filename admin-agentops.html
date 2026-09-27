@@ -123,7 +123,7 @@ if(sessionStorage.getItem('orbitfind_admin_ok')!=='1'){location.replace('/#admin
 <script src="agentops.js"></script>
 <script src="brand-enhanced.js"></script>
 <script>
-document.getElementById('logoutBtn')?.addEventListener('click',()=>{sessionStorage.removeItem('orbitfind_admin_ok');location.replace('/');});
+document.getElementById('logoutBtn')?.addEventListener('click',()=>{sessionStorage.removeItem('orbitfind_admin_ok');sessionStorage.removeItem('orbitfind_admin_pin');location.replace('/');});
 </script>
 </body>
 </html>
