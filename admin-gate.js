@@ -24,12 +24,12 @@ form?.addEventListener('submit',async e=>{
   const d=await r.json().catch(()=>({}));
   if(!r.ok||!d.ok)throw new Error(d.error||'Access denied');
   sessionStorage.setItem('orbitfind_admin_ok','1');
-  status.textContent='Access granted. Opening AgentOps…';status.className='good';
+  sessionStorage.setItem('orbitfind_admin_pin',value);status.textContent='Access granted. Opening Security Desk…';status.className='good';
   setTimeout(()=>location.href='/admin-agentops.html',350);
  }catch(err){
   status.textContent='Incorrect PIN. Try again.';status.className='bad';pin?.select();
  }finally{
-  button.disabled=false;button.innerHTML='Unlock AgentOps <span>→</span>';
+  button.disabled=false;button.innerHTML='Unlock Security Desk <span>→</span>';
  }
 });
 })();
