@@ -369,6 +369,8 @@ if(foundForm){
         found_location:$('#foundLocation').value.trim(),
         found_embedding:pendingFoundEmbedding
       });
+      window.orbitLastFoundReport=out.report||null;
+      window.orbitLastMatches=out.matches||[];
       renderFinderMatches(out.matches||[]);
       const top=out.matches?.[0];
       if(top){
