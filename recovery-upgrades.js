@@ -113,7 +113,7 @@ function ensureAlertUI(){
   }
   if(!document.querySelector('#matchAlertPanel')){
     const p=document.createElement('div');p.id='matchAlertPanel';p.className='match-alert-panel';
-    p.innerHTML='<div class="alert-panel-head"><div><small>LIVE MATCH ALERTS</small><strong>Possible matches</strong></div><button id="enableBrowserAlerts" type="button">Enable browser alerts</button></div><div id="matchAlertList"><div class="empty-cases">No new match alerts.</div></div>';
+    p.innerHTML='<div class="alert-panel-head"><div><small>LIVE MATCH ALERTS</small><strong>Possible matches</strong></div><div class="alert-head-actions"><button id="enableLiveDistance" type="button">Live distance</button><button id="enableBrowserAlerts" type="button">Browser alerts</button></div></div><div id="liveDistanceState" class="live-distance-state">Distance tracking is off · location permission is only requested when you enable it.</div><div id="matchAlertList"><div class="empty-cases">No new match alerts.</div></div>';
     document.body.appendChild(p);
   }
   if(!document.querySelector('#fallbackStrip')){
@@ -128,11 +128,13 @@ async function pollAlerts(){
   try{
     const out=await cloudCall({action:'list_match_alerts'});
     lastAlerts=out.alerts||[];
+    window.orbitMatchAlerts=lastAlerts;
+    window.dispatchEvent(new CustomEvent('orbit-alerts-updated'));
     const seen=getSeen();
     const unread=lastAlerts.filter(a=>a.status==='unread');
     document.querySelector('#matchAlertCount').textContent=String(unread.length);
     const list=document.querySelector('#matchAlertList');
-    if(list) list.innerHTML=lastAlerts.length?lastAlerts.map(a=>'<article class="live-alert '+(a.status==='unread'?'unread':'')+'"><div><strong>'+esc(a.case?.case_code||'Case')+' · '+esc(a.score)+'%</strong><span>'+esc(pretty(a.case?.color||''))+' '+esc(pretty(a.case?.category||''))+'</span></div><small>Found near '+esc(a.found_location||'campus')+'</small></article>').join(''):'<div class="empty-cases">No match alerts yet.</div>';
+    if(list) list.innerHTML=lastAlerts.length?lastAlerts.map(a=>'<article class="live-alert '+(a.status==='unread'?'unread':'')+'" data-alert-id="'+esc(a.id)+'"><div><strong>'+esc(a.case?.case_code||'Case')+' · '+esc(a.score)+'%</strong><span>'+esc(pretty(a.case?.color||''))+' '+esc(pretty(a.case?.category||''))+'</span></div><small>Found near '+esc(a.found_location||'campus')+' <b class="alert-distance" data-alert-distance="'+esc(a.id)+'"></b></small></article>').join(''):'<div class="empty-cases">No match alerts yet.</div>';
     unread.forEach(a=>{
       if(seen.has(a.id))return;
       seen.add(a.id);
