@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="cases-enhanced.css" />
   <link rel="stylesheet" href="brand-enhanced.css" />
+  <link rel="stylesheet" href="live-distance.css" />
   <link rel="icon" type="image/svg+xml" href="orbitfind-mark.svg" />
 </head>
 <body>
@@ -130,6 +131,14 @@
             <label class="field"><span>Item category</span><select id="foundCategory" required><option value="backpack">Backpack</option><option value="bottle">Bottle</option><option value="umbrella">Umbrella</option><option value="handbag">Handbag</option><option value="suitcase">Suitcase</option><option value="laptop">Laptop</option><option value="cell phone">Phone</option><option value="book">Book</option><option value="sports ball">Sports item</option></select></label>
             <label class="field"><span>Primary color</span><select id="foundColor"><option value="">Not sure</option><option value="black">Black</option><option value="white">White</option><option value="blue">Blue</option><option value="red">Red</option><option value="green">Green</option><option value="yellow">Yellow</option><option value="brown">Brown</option><option value="gray">Gray</option><option value="orange">Orange</option><option value="purple">Purple</option></select></label>
             <label class="field field-wide"><span>Found location on PCE campus</span><input id="foundLocation" list="pceLocations" placeholder="Choose a campus location or type your own" required /></label>
+            <div class="field field-wide live-location-card" id="foundLocationCard">
+              <div class="live-location-copy">
+                <span class="live-location-icon">⌖</span>
+                <div><strong>Attach current position</strong><small>Optional · helps the owner see approximate distance from the reported item. Your exact coordinates are not shown to other students.</small></div>
+              </div>
+              <button class="location-action" id="captureFoundLocation" type="button">Use my location</button>
+              <div class="location-state" id="foundLocationState">GPS not attached</div>
+            </div>
             <label class="field field-wide"><span>Visible details</span><input id="foundDetails" placeholder="e.g. red keychain, silver zip, sticker on front" /></label>
             <div class="field field-wide upload-field">
               <div class="upload-label-row"><span>Found item photo</span><small>Required for AI visual matching</small></div>
@@ -188,6 +197,7 @@
   <script src="app.js"></script>
   <script src="cases-enhanced.js"></script>
   <script src="recovery-upgrades.js"></script>
+  <script src="live-distance.js"></script>
   <script src="admin-gate.js"></script>
   <script src="brand-enhanced.js"></script>
 </body>
