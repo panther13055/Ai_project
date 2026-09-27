@@ -367,6 +367,8 @@ if(foundForm){
         color:$('#foundColor').value,
         details:$('#foundDetails').value.trim(),
         found_location:$('#foundLocation').value.trim(),
+        found_lat:window.orbitFoundCoords?.lat ?? null,
+        found_lng:window.orbitFoundCoords?.lng ?? null,
         found_embedding:pendingFoundEmbedding
       });
       window.orbitLastFoundReport=out.report||null;
