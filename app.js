@@ -50,10 +50,25 @@ const storedCases = () => JSON.parse(localStorage.getItem('orbitfind_cases') || 
 const saveCases = (v) => localStorage.setItem('orbitfind_cases', JSON.stringify(v));
 
 function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._x); t._x=setTimeout(()=>t.classList.remove('show'),2400); }
-function caseId(){ return `OF-${String(Date.now()).slice(-4)}`; }
+function caseId(){
+  const used=new Set(storedCases().map(x=>x.id));
+  for(let i=0;i<30;i++){
+    const n=crypto.getRandomValues(new Uint16Array(1))[0]%10000;
+    const id='OF-'+String(n).padStart(4,'0');
+    if(!used.has(id)) return id;
+  }
+  return 'OF-'+String(Date.now()).slice(-4);
+}
 function currentCase(){ const arr=storedCases(); return [...arr].reverse().find(x=>x.status!=='recovered') || arr[arr.length-1] || null; }
 function cloudToLocal(row){ const sightings=(row.sightings||[]).slice().sort((a,b)=>new Date(a.created_at)-new Date(b.created_at)); const last=sightings[sightings.length-1]; return {id:row.case_code,cloud_id:row.id,category:row.category,color:row.color,details:row.details||'',location:row.last_seen_location,created:new Date(row.created_at).getTime(),status:row.status,reference_embedding:Array.isArray(row.reference_embedding)?row.reference_embedding:null,sightings:sightings.map(s=>({at:new Date(s.created_at).getTime(),confidence:s.confidence,color:s.detected_color,source:s.source})),lastSighting:last?{at:new Date(last.created_at).getTime(),confidence:last.confidence,color:last.detected_color,source:last.source}:undefined}; }
-async function syncFromCloud(){ try{ const data=await cloudCall({action:'list_cases'}); const remote=(data.cases||[]).map(cloudToLocal).sort((a,b)=>a.created-b.created); if(remote.length){ saveCases(remote); renderCases(); updateTarget(); } return true; }catch(err){ console.warn('Cloud sync unavailable',err); return false; } }
+async function syncFromCloud(){ try{
+  const data=await cloudCall({action:'list_cases'});
+  const remote=(data.cases||[]).map(cloudToLocal);
+  const localOnly=storedCases().filter(x=>!x.cloud_id);
+  const merged=[...remote,...localOnly].sort((a,b)=>a.created-b.created);
+  saveCases(merged); renderCases(); updateTarget();
+  return true;
+}catch(err){ console.warn('Cloud sync unavailable',err); return false; } }
 function pretty(s){ return (s||'').replace(/\b\w/g,c=>c.toUpperCase()); }
 function escHtml(v){ return String(v??'').replace(/[&<>\"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[m])); }
 async function ensureSimilarityModel(){ if(similarityModel) return similarityModel; await tf.ready(); similarityModel=await mobilenet.load({version:2,alpha:0.5}); return similarityModel; }
