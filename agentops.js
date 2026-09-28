@@ -108,7 +108,7 @@ async function load(){
  const started=performance.now();
  try{
   const [stats,cases,reports,handovers]=await Promise.all([
-   call('get_stats'),
+   call('admin_get_stats',{admin_pin:ADMIN_PIN}),
    call('admin_list_all_cases',{admin_pin:ADMIN_PIN}),
    call('admin_list_all_found_reports',{admin_pin:ADMIN_PIN}),
    call('admin_list_handover_requests',{admin_pin:ADMIN_PIN})
