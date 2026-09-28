@@ -108,3 +108,12 @@ body[data-page="cases"] [data-nav="cases"]{color:#eef5ff!important;background:rg
   .reveal{opacity:1!important;transform:none!important;transition:none!important}
   .scanner-shell,.hero-visual{will-change:auto!important}
 }
+
+
+/* Fix mobile menu stacking: keep options above the page overlay */
+@media(max-width:980px){
+  body.nav-open .topbar{z-index:1305!important}
+  body.nav-open:after{z-index:1200!important}
+  .nav{z-index:1310!important}
+  .icon-btn{z-index:1315!important}
+}
