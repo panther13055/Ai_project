@@ -17,3 +17,78 @@ body[data-page="found"] [data-nav="found"],
 body[data-page="dashboard"] [data-nav="dashboard"],
 body[data-page="cases"] [data-nav="cases"]{color:#eef5ff!important;background:rgba(105,240,208,.07);border-color:rgba(105,240,208,.12)}
 @media(max-width:900px){body[data-page]:not([data-page="home"]) main{padding-top:12px}}
+
+
+/* Dynamic mobile navigation */
+.icon-btn{position:relative;z-index:1201}
+@media(max-width:980px){
+  .nav{
+    display:flex!important;
+    position:fixed;
+    top:76px;
+    right:18px;
+    width:min(320px,calc(100vw - 36px));
+    max-height:calc(100vh - 96px);
+    overflow:auto;
+    flex-direction:column;
+    align-items:stretch;
+    gap:6px;
+    padding:14px;
+    border:1px solid rgba(105,240,208,.16);
+    border-radius:18px;
+    background:linear-gradient(180deg,rgba(13,22,37,.98),rgba(7,12,22,.99));
+    box-shadow:0 24px 70px rgba(0,0,0,.52);
+    backdrop-filter:blur(20px);
+    -webkit-backdrop-filter:blur(20px);
+    opacity:0;
+    visibility:hidden;
+    transform:translateY(-10px) scale(.98);
+    transform-origin:top right;
+    pointer-events:none;
+    transition:opacity .2s ease,transform .2s ease,visibility .2s ease;
+    z-index:1200;
+  }
+  .nav.menu-open{
+    opacity:1;
+    visibility:visible;
+    transform:none;
+    pointer-events:auto;
+  }
+  .nav .nav-link{
+    display:flex;
+    align-items:center;
+    min-height:44px;
+    padding:11px 13px;
+    border:1px solid transparent;
+    border-radius:11px;
+    color:#9babc0;
+    font-size:11px;
+    font-weight:600;
+  }
+  .nav .nav-link:hover,
+  .nav .nav-link.active{
+    color:#eff7ff;
+    background:rgba(105,240,208,.07);
+    border-color:rgba(105,240,208,.12);
+  }
+  .icon-btn.active{
+    color:#69f0d0;
+    border-color:rgba(105,240,208,.25);
+    background:rgba(105,240,208,.07);
+    font-size:22px;
+    line-height:1;
+  }
+  body.nav-open{overflow:hidden}
+  body.nav-open:after{
+    content:"";
+    position:fixed;
+    inset:0;
+    z-index:1190;
+    background:rgba(2,6,12,.46);
+    backdrop-filter:blur(3px);
+    -webkit-backdrop-filter:blur(3px);
+  }
+}
+@media(max-width:620px){
+  .nav{top:72px;right:10px;width:calc(100vw - 20px);border-radius:16px}
+}
