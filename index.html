@@ -17,26 +17,27 @@
   <link rel="stylesheet" href="brand-enhanced.css" />
   <link rel="stylesheet" href="recovery-upgrades.css" />
   <link rel="stylesheet" href="live-distance.css" />
+  <link rel="stylesheet" href="multi-page.css" />
   <link rel="icon" type="image/svg+xml" href="orbitfind-mark.svg" />
 </head>
-<body>
+<body data-page="home">
   <div class="of-splash" id="orbitfindSplash"><div class="of-splash-inner"><img class="of-splash-logo" src="orbitfind-mark.svg" alt="OrbitFind" /><div class="of-splash-word">OrbitFind <span>AI</span></div><div class="of-splash-line"><i></i></div></div></div>
   <div class="noise"></div>
   <div class="aurora aurora-a"></div>
   <div class="aurora aurora-b"></div>
 
   <header class="topbar">
-    <a class="brand" href="#home" aria-label="OrbitFind AI home">
+    <a class="brand" href="/" aria-label="OrbitFind AI home">
       <span class="brand-mark orbitfind-mark" aria-hidden="true"><img src="orbitfind-mark.svg" alt="" /></span>
       <span><strong>OrbitFind</strong><em>AI</em></span>
     </a>
     <nav class="nav" aria-label="Primary navigation">
-      <a href="#home" class="nav-link active">Overview</a>
-      <a href="#register" class="nav-link">Register</a>
-      <a href="#scanner" class="nav-link">AI Scanner</a>
-      <a href="#found" class="nav-link">Found Item</a>
-      <a href="#dashboard" class="nav-link">Dashboard</a>
-      <a href="#cases" class="nav-link">Cases</a>
+      <a href="/" class="nav-link" data-nav="home">Overview</a>
+      <a href="/register.html" class="nav-link" data-nav="register">Register</a>
+      <a href="/scanner.html" class="nav-link" data-nav="scanner">AI Scanner</a>
+      <a href="/found.html" class="nav-link" data-nav="found">Found Item</a>
+      <a href="/dashboard.html" class="nav-link" data-nav="dashboard">Dashboard</a>
+      <a href="/cases.html" class="nav-link" data-nav="cases">Cases</a>
     </nav>
     <div class="top-actions">
       <div class="status-chip"><span class="live-dot"></span><span id="modelStatus">AI standby</span></div>
@@ -52,8 +53,8 @@
         <h1>Find what’s lost.<br><span>Before it disappears.</span></h1>
         <p class="hero-lead">OrbitFind combines live object detection, visual similarity, campus-location clues and a cloud recovery workflow to help students find lost items faster.</p>
         <div class="hero-actions">
-          <a class="btn btn-primary" href="#scanner">Start AI scan <span>↗</span></a>
-          <a class="btn btn-secondary" href="#register">Register an item</a>
+          <a class="btn btn-primary" href="/scanner.html">Start AI scan <span>↗</span></a>
+          <a class="btn btn-secondary" href="/register.html">Register an item</a>
         </div>
         <div class="proof-row">
           <div><strong>80</strong><span>COCO object classes</span></div>
@@ -177,7 +178,7 @@
     <section class="section how-section"><div class="how-card reveal"><div class="eyebrow">End-to-end recovery</div><div class="how-grid"><div class="how-step"><span>01</span><h3>Register</h3><p>Create the lost-item profile and visual fingerprint.</p></div><div class="how-arrow">→</div><div class="how-step"><span>02</span><h3>Detect</h3><p>Scan with phone camera or analyze an uploaded image.</p></div><div class="how-arrow">→</div><div class="how-step"><span>03</span><h3>Match</h3><p>Rank found reports against open lost cases.</p></div><div class="how-arrow">→</div><div class="how-step"><span>04</span><h3>Verify</h3><p>Review identifying details before handover.</p></div><div class="how-arrow">→</div><div class="how-step"><span>05</span><h3>Recover</h3><p>Close the case and remove it from active matching.</p></div></div></div></section>
   </main>
 
-  <footer><a class="brand footer-brand" href="#home"><span class="brand-mark small orbitfind-mark"><img src="orbitfind-mark.svg" alt="" /></span><span><strong>OrbitFind</strong><em>AI</em></span></a><p>AI Lost & Found · Computer Vision Prototype</p><span>PCE campus prototype · 2026</span></footer>
+  <footer><a class="brand footer-brand" href="/"><span class="brand-mark small orbitfind-mark"><img src="orbitfind-mark.svg" alt="" /></span><span><strong>OrbitFind</strong><em>AI</em></span></a><p>AI Lost & Found · Computer Vision Prototype</p><span>PCE campus prototype · 2026</span></footer>
 
   <div class="admin-modal" id="adminModal" aria-hidden="true">
     <div class="admin-modal-card" role="dialog" aria-modal="true" aria-labelledby="adminModalTitle">
@@ -204,5 +205,6 @@
   <script src="live-distance.js"></script>
   <script src="admin-gate.js"></script>
   <script src="brand-enhanced.js"></script>
+  <script src="multi-page.js"></script>
 </body>
 </html>
