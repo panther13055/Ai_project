@@ -1,0 +1,19 @@
+/* OrbitFind multi-page presentation layer */
+body[data-page] main>section{display:none}
+body[data-page="home"] #home,
+body[data-page="home"] .ticker,
+body[data-page="home"] .how-section,
+body[data-page="register"] #register,
+body[data-page="scanner"] #scanner,
+body[data-page="found"] #found,
+body[data-page="dashboard"] #dashboard,
+body[data-page="cases"] #cases{display:block}
+body[data-page]:not([data-page="home"]) main{padding-top:26px}
+body[data-page]:not([data-page="home"]) main>section{min-height:calc(100vh - 150px)}
+body[data-page="home"] [data-nav="home"],
+body[data-page="register"] [data-nav="register"],
+body[data-page="scanner"] [data-nav="scanner"],
+body[data-page="found"] [data-nav="found"],
+body[data-page="dashboard"] [data-nav="dashboard"],
+body[data-page="cases"] [data-nav="cases"]{color:#eef5ff!important;background:rgba(105,240,208,.07);border-color:rgba(105,240,208,.12)}
+@media(max-width:900px){body[data-page]:not([data-page="home"]) main{padding-top:12px}}
