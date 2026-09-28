@@ -367,7 +367,7 @@ $('#demoButton').addEventListener('click',()=>{
 });
 
 const io=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')}),{threshold:.12}); $$('.reveal').forEach(el=>io.observe(el));
-window.addEventListener('scroll',()=>{const ids=['home','register','scanner','found','dashboard','cases'];let active='home';ids.forEach(id=>{const el=document.getElementById(id);if(el&&scrollY>=el.offsetTop-180)active=id});$$('.nav-link').forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+active));});
+window.addEventListener('scroll',()=>{if(document.body.dataset.page)return;const ids=['home','register','scanner','found','dashboard','cases'];let active='home';ids.forEach(id=>{const el=document.getElementById(id);if(el&&scrollY>=el.offsetTop-180)active=id});$('.nav-link').forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+active));});
 
 updateTarget(); renderCases();
 syncFromCloud().then(ok=>{ if(ok && currentCase()) setAgent('READY','Cloud sync complete. Your latest case is loaded.',['Supabase connected','Cases synchronized','Scanner ready']); });
