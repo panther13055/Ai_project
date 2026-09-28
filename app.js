@@ -372,14 +372,20 @@ window.addEventListener('scroll',()=>{if(document.body.dataset.page)return;const
 updateTarget(); renderCases();
 syncFromCloud().then(ok=>{ if(ok && currentCase()) setAgent('READY','Cloud sync complete. Your latest case is loaded.',['Supabase connected','Cases synchronized','Scanner ready']); });
 const warmup=async()=>{
+  const page=document.body.dataset.page||'home';
+  if(!['scanner','register','found'].includes(page)) return;
   try{
     await tf.ready();
     if(tf.getBackend()!=='webgl' && tf.findBackend?.('webgl')) await tf.setBackend('webgl');
-    await ensureSimilarityModel();
-    ensureModel(false);
+    if(page==='scanner'){
+      ensureModel(false);
+      setTimeout(()=>ensureSimilarityModel().catch(()=>{}),350);
+    }else{
+      ensureSimilarityModel();
+    }
   }catch(err){console.warn('AI warm-up skipped',err);}
 };
-if('requestIdleCallback' in window) requestIdleCallback(warmup,{timeout:1800}); else setTimeout(warmup,900);
+if('requestIdleCallback' in window) requestIdleCallback(warmup,{timeout:1200}); else setTimeout(warmup,350);
 window.addEventListener('beforeunload',()=>{ if(stream) stream.getTracks().forEach(t=>t.stop()); });
 
 const foundImageInput=$('#foundImage');
@@ -506,5 +512,7 @@ async function refreshDashboardStats(){
     if(status) status.textContent='Cloud statistics are temporarily unavailable. Core scanning still works.';
   }
 }
-refreshDashboardStats();
-setInterval(refreshDashboardStats,30000);
+if((document.body.dataset.page||'home')==='dashboard'){
+  refreshDashboardStats();
+  setInterval(refreshDashboardStats,30000);
+}
