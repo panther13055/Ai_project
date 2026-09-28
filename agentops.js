@@ -22,7 +22,15 @@ function renderFoundReports(rows=FOUND_REPORTS){
 function renderHandovers(rows){
  const box=$('#handoverQueue'); if(!box)return;
  if(!rows?.length){box.innerHTML='<div class="guard-flow"><span>No secure handover requests waiting</span></div>';return;}
- box.innerHTML=rows.map(r=>'<article class="desk-request"><div><strong>'+esc(r.case?.case_code||'Case')+' · '+esc(r.case?.color||'')+' '+esc(r.case?.category||'')+'</strong><small>Found near '+esc(r.found_location||'PCE campus')+' · '+esc(r.score??'—')+'% candidate</small></div><span class="desk-status '+esc(r.status)+'">'+esc(String(r.status).toUpperCase())+'</span>'+(r.status==='pending'?'<div class="desk-actions"><button data-desk-review="approved" data-request-id="'+esc(r.id)+'">Approve</button><button data-desk-review="rejected" data-request-id="'+esc(r.id)+'">Reject</button></div>':r.status==='approved'?'<div class="desk-code"><b>'+esc(r.handover_code||'------')+'</b><button data-desk-review="completed" data-request-id="'+esc(r.id)+'">Complete handover</button></div>':'')+'</article>').join('');
+ box.innerHTML=rows.map(r=>{
+  const hasProof=!!r.case?.has_private_proof;
+  const verified=!!r.ownership_verified;
+  const proofBadge=hasProof
+    ? '<span class="proof-check '+(verified?'verified':'pending')+'">'+(verified?'✓ OWNER VERIFIED':'OWNER PROOF PENDING')+'</span>'
+    : '<span class="proof-check manual">MANUAL SECURITY CHECK</span>';
+  const approveDisabled=hasProof&&!verified?' disabled title="Owner must verify private proof first"':'';
+  return '<article class="desk-request"><div><strong>'+esc(r.case?.case_code||'Case')+' · '+esc(r.case?.color||'')+' '+esc(r.case?.category||'')+'</strong><small>Found near '+esc(r.found_location||'PCE campus')+' · '+esc(r.score??'—')+'% candidate</small>'+proofBadge+'</div><span class="desk-status '+esc(r.status)+'">'+esc(String(r.status).toUpperCase())+'</span>'+(r.status==='pending'?'<div class="desk-actions"><button data-desk-review="approved" data-request-id="'+esc(r.id)+'"'+approveDisabled+'>Approve</button><button data-desk-review="rejected" data-request-id="'+esc(r.id)+'">Reject</button></div>':r.status==='approved'?'<div class="desk-code"><b>'+esc(r.handover_code||'------')+'</b><button data-desk-review="completed" data-request-id="'+esc(r.id)+'">Complete handover</button></div>':'')+'</article>';
+ }).join('');
 }
 function renderRows(list=CASES){
  const body=$('#caseRows'); if(!body)return;
