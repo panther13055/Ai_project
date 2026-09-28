@@ -6,6 +6,7 @@ let lastVisualAt = 0;
 let lastVisualSimilarity = null;
 let pendingReferenceEmbedding = null;
 let pendingFoundEmbedding = null;
+let foundEmbeddingState = 'idle';
 let stream = null;
 let running = false;
 let activeMode = 'camera';
@@ -386,24 +387,28 @@ if(foundImageInput){
   foundImageInput.addEventListener('change',async e=>{
     const file=e.target.files?.[0];
     pendingFoundEmbedding=null;
+    foundEmbeddingState='idle';
     const foundZone=$('#foundDropzone'); const foundName=$('#foundFileName');
     if(!file){ foundZone?.classList.remove('has-file'); if(foundName) foundName.textContent='Add found-item photo'; $('#foundImageStatus').textContent='No image selected'; $('#foundImageHint').textContent='Add a clear photo for visual matching.'; $('#foundThumb').style.backgroundImage=''; return; }
     foundZone?.classList.add('has-file'); if(foundName) foundName.textContent=file.name;
     const url=URL.createObjectURL(file);
     $('#foundThumb').style.backgroundImage='url("'+url+'")';
-    $('#foundImageStatus').textContent='Learning found-item fingerprint…';
-    $('#foundImageHint').textContent='Extracting visual features on this device.';
+    foundEmbeddingState='loading';
+    $('#foundImageStatus').textContent='Analyzing photo…';
+    $('#foundImageHint').textContent='Optimizing image and extracting visual features.';
     try{
       const el=await optimizedCanvasFromFile(file,640);
       pendingFoundEmbedding=await embeddingFromElement(el);
+      foundEmbeddingState='ready';
       $('#foundImageStatus').textContent='Visual fingerprint ready';
       $('#foundImageHint').textContent='Ready to compare against active lost-item cases.';
       toast('Found-item image analyzed');
     }catch(err){
       console.error(err);
       pendingFoundEmbedding=null;
-      $('#foundImageStatus').textContent='Could not analyze image';
-      $('#foundImageHint').textContent=err.message||'Try another clear photo.';
+      foundEmbeddingState='failed';
+      $('#foundImageStatus').textContent='Photo loaded · contextual matching available';
+      $('#foundImageHint').textContent='Visual analysis was skipped on this device. Category, color, location and details will still be used.';
     }
   });
 }
@@ -429,11 +434,13 @@ const foundForm=$('#foundForm');
 if(foundForm){
   foundForm.addEventListener('submit',async e=>{
     e.preventDefault();
-    if(!pendingFoundEmbedding){ toast('Wait for the found-item image analysis to finish'); return; }
+    if(foundEmbeddingState==='loading'){ toast('Photo analysis is still finishing'); return; }
     const btn=$('#findMatchesButton');
     btn.disabled=true; btn.textContent='Searching active cases…';
     $('#finderState').textContent='MATCHING';
-    $('#finderAgent').textContent='OrbitFind is comparing category, color, description clues and visual fingerprints against active lost-item cases.';
+    $('#finderAgent').textContent=foundEmbeddingState==='ready'
+      ? 'OrbitFind is comparing category, color, description clues and visual fingerprints against active lost-item cases.'
+      : 'Visual analysis is unavailable on this device, so OrbitFind is using category, color, location and description clues.';
     try{
       const out=await cloudCall({
         action:'match_found_item',
