@@ -1,5 +1,9 @@
 let model = null;
 let similarityModel = null;
+let modelPromise = null;
+let similarityModelPromise = null;
+let lastVisualAt = 0;
+let lastVisualSimilarity = null;
 let pendingReferenceEmbedding = null;
 let pendingFoundEmbedding = null;
 let stream = null;
@@ -71,8 +75,46 @@ async function syncFromCloud(){ try{
 }catch(err){ console.warn('Cloud sync unavailable',err); return false; } }
 function pretty(s){ return (s||'').replace(/\b\w/g,c=>c.toUpperCase()); }
 function escHtml(v){ return String(v??'').replace(/[&<>\"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[m])); }
-async function ensureSimilarityModel(){ if(similarityModel) return similarityModel; await tf.ready(); similarityModel=await mobilenet.load({version:2,alpha:0.5}); return similarityModel; }
-async function embeddingFromElement(el){ const m=await ensureSimilarityModel(); const t=m.infer(el,true); const v=Array.from(await t.data()); t.dispose(); return v; }
+async function ensureSimilarityModel(){
+  if(similarityModel) return similarityModel;
+  if(similarityModelPromise) return similarityModelPromise;
+  similarityModelPromise=(async()=>{
+    await tf.ready();
+    similarityModel=await mobilenet.load({version:2,alpha:0.5});
+    return similarityModel;
+  })();
+  try{return await similarityModelPromise;}finally{similarityModelPromise=null;}
+}
+async function embeddingFromElement(el){
+  const m=await ensureSimilarityModel();
+  const t=m.infer(el,true);
+  try{return Array.from(await t.data());}finally{t.dispose();}
+}
+async function optimizedCanvasFromFile(file,maxDim=640){
+  if(!file||!file.type.startsWith('image/')) throw new Error('Please select an image file');
+  if(file.size>15*1024*1024) throw new Error('Image is too large. Use an image under 15 MB.');
+  let source=null;
+  try{
+    source=await createImageBitmap(file,{imageOrientation:'from-image'});
+    const scale=Math.min(1,maxDim/Math.max(source.width,source.height));
+    const out=document.createElement('canvas');
+    out.width=Math.max(1,Math.round(source.width*scale));
+    out.height=Math.max(1,Math.round(source.height*scale));
+    out.getContext('2d',{alpha:false}).drawImage(source,0,0,out.width,out.height);
+    return out;
+  }catch(err){
+    const url=URL.createObjectURL(file);
+    try{
+      const image=await new Promise((resolve,reject)=>{const x=new Image();x.onload=()=>resolve(x);x.onerror=reject;x.src=url;});
+      const scale=Math.min(1,maxDim/Math.max(image.naturalWidth,image.naturalHeight));
+      const out=document.createElement('canvas');
+      out.width=Math.max(1,Math.round(image.naturalWidth*scale));
+      out.height=Math.max(1,Math.round(image.naturalHeight*scale));
+      out.getContext('2d',{alpha:false}).drawImage(image,0,0,out.width,out.height);
+      return out;
+    }finally{URL.revokeObjectURL(url);}
+  }finally{source?.close?.();}
+}
 function cosineSimilarity(a,b){ if(!a||!b||a.length!==b.length||!a.length)return null; let d=0,aa=0,bb=0; for(let i=0;i<a.length;i++){d+=a[i]*b[i];aa+=a[i]*a[i];bb+=b[i]*b[i];} return aa&&bb?d/(Math.sqrt(aa)*Math.sqrt(bb)):null; }
 function cropToCanvas(source,bbox){ const [x,y,w,h]=bbox; const out=document.createElement('canvas'); out.width=224; out.height=224; out.getContext('2d').drawImage(source,x,y,w,h,0,0,224,224); return out; }
 
@@ -91,20 +133,17 @@ $('#referenceImage').addEventListener('change',async e=>{
   $('#referenceThumb').style.backgroundImage='url("'+url+'")';
   $('#referenceStatus').textContent='Learning visual fingerprint…';
   $('#referenceHint').textContent='Extracting a visual embedding on this device.';
-  const ref=new Image();
-  ref.onload=async()=>{
-    try{
-      pendingReferenceEmbedding=await embeddingFromElement(ref);
-      $('#referenceStatus').textContent='Reference fingerprint ready';
-      $('#referenceHint').textContent='Visual similarity will be included in candidate scoring.';
-      toast('Reference image learned');
-    }catch(err){
-      console.error(err); pendingReferenceEmbedding=null;
-      $('#referenceStatus').textContent='Could not analyze image';
-      $('#referenceHint').textContent='You can still use category + color matching.';
-    }
-  };
-  ref.src=url;
+  try{
+    const ref=await optimizedCanvasFromFile(file,640);
+    pendingReferenceEmbedding=await embeddingFromElement(ref);
+    $('#referenceStatus').textContent='Reference fingerprint ready';
+    $('#referenceHint').textContent='Visual similarity will be included in candidate scoring.';
+    toast('Reference image learned');
+  }catch(err){
+    console.error(err);pendingReferenceEmbedding=null;
+    $('#referenceStatus').textContent='Could not analyze image';
+    $('#referenceHint').textContent=err.message||'You can still use category + color matching.';
+  }
 });
 
 function updateTarget(){
@@ -147,18 +186,26 @@ $$('.mode-tab').forEach(b=>b.addEventListener('click',()=>{
   else{ stopCamera(); $('#cameraButton').style.display='none'; $('.upload-label').style.display='inline-flex'; }
 }));
 
-async function ensureModel(){
+async function ensureModel(showLoading=true){
   if(model) return model;
-  loadingState.style.display='block'; emptyState.style.display='none'; modelStatus.textContent='Loading AI…';
-  try{
-    await tf.ready();
-    model=await cocoSsd.load({base:'lite_mobilenet_v2'});
-    modelStatus.textContent='AI ready'; $('.live-dot').style.background='var(--mint)';
-    toast('AI model loaded');
-  }catch(err){
-    console.error(err); modelStatus.textContent='Demo mode'; toast('AI model could not load. Demo mode still works.');
-  }finally{ loadingState.style.display='none'; }
-  return model;
+  if(modelPromise) return modelPromise;
+  if(showLoading){loadingState.style.display='block';emptyState.style.display='none';}
+  modelStatus.textContent='Loading AI…';
+  modelPromise=(async()=>{
+    try{
+      await tf.ready();
+      model=await cocoSsd.load({base:'lite_mobilenet_v2'});
+      modelStatus.textContent='AI ready';
+      $('.live-dot').style.background='var(--mint)';
+      return model;
+    }catch(err){
+      console.error(err);modelStatus.textContent='Demo mode';return null;
+    }finally{
+      if(showLoading) loadingState.style.display='none';
+      modelPromise=null;
+    }
+  })();
+  return modelPromise;
 }
 
 async function startCamera(){
@@ -167,7 +214,7 @@ async function startCamera(){
     await ensureModel();
     if(!model) throw new Error('Model unavailable');
     if(stream) stream.getTracks().forEach(t=>t.stop());
-    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:facingMode},width:{ideal:1280},height:{ideal:720}},audio:false});
+    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:facingMode},width:{ideal:960},height:{ideal:540},frameRate:{ideal:24,max:30}},audio:false});
     video.srcObject=stream; await video.play();
     video.style.display='block'; img.style.display='none'; emptyState.style.display='none';
     running=true; consecutiveMatches=0; $('#verificationCount').textContent='0 / '+VERIFY_FRAMES;
@@ -228,7 +275,7 @@ async function detectOnce(source,singleImage=false){
   if(!sizeCanvas(source))return;
   ctx.clearRect(0,0,canvas.width,canvas.height);
   let preds=[];
-  if(model){ try{preds=await model.detect(source,20,.38);}catch(e){console.error(e);setAgent('AI ERROR','Detection failed. Retry the scan.',['Model still loaded','Retry recommended']);} }
+  if(model){ try{preds=await model.detect(source,8,.38);}catch(e){console.error(e);setAgent('AI ERROR','Detection failed. Retry the scan.',['Model still loaded','Retry recommended']);} }
   await drawPredictions(source,preds,singleImage);
 }
 
@@ -258,12 +305,17 @@ async function drawPredictions(source,preds,singleImage=false){
   const rs=$('#resultState');
   let visualSimilarity=null;
   if(best?.isTarget && c?.reference_embedding && (singleImage || consecutiveMatches>=1)){
-    try{
-      const crop=cropToCanvas(source,best.bbox);
-      const emb=await embeddingFromElement(crop);
-      const cos=cosineSimilarity(c.reference_embedding,emb);
-      visualSimilarity=cos===null?null:Math.max(0,Math.min(100,Math.round(cos*100)));
-    }catch(err){ console.warn('Visual similarity failed',err); }
+    const now=performance.now();
+    if(singleImage || now-lastVisualAt>1100 || lastVisualSimilarity===null){
+      try{
+        const crop=cropToCanvas(source,best.bbox);
+        const emb=await embeddingFromElement(crop);
+        const cos=cosineSimilarity(c.reference_embedding,emb);
+        lastVisualSimilarity=cos===null?null:Math.max(0,Math.min(100,Math.round(cos*100)));
+        lastVisualAt=now;
+      }catch(err){ console.warn('Visual similarity failed',err); }
+    }
+    visualSimilarity=lastVisualSimilarity;
   }
   $('#visualSimilarity').textContent=visualSimilarity===null?'—':visualSimilarity+'%';
   if(best?.isTarget){
@@ -318,6 +370,15 @@ window.addEventListener('scroll',()=>{const ids=['home','register','scanner','fo
 
 updateTarget(); renderCases();
 syncFromCloud().then(ok=>{ if(ok && currentCase()) setAgent('READY','Cloud sync complete. Your latest case is loaded.',['Supabase connected','Cases synchronized','Scanner ready']); });
+const warmup=async()=>{
+  try{
+    await tf.ready();
+    if(tf.getBackend()!=='webgl' && tf.findBackend?.('webgl')) await tf.setBackend('webgl');
+    await ensureSimilarityModel();
+    ensureModel(false);
+  }catch(err){console.warn('AI warm-up skipped',err);}
+};
+if('requestIdleCallback' in window) requestIdleCallback(warmup,{timeout:1800}); else setTimeout(warmup,900);
 window.addEventListener('beforeunload',()=>{ if(stream) stream.getTracks().forEach(t=>t.stop()); });
 
 const foundImageInput=$('#foundImage');
@@ -332,20 +393,18 @@ if(foundImageInput){
     $('#foundThumb').style.backgroundImage='url("'+url+'")';
     $('#foundImageStatus').textContent='Learning found-item fingerprint…';
     $('#foundImageHint').textContent='Extracting visual features on this device.';
-    const el=new Image();
-    el.onload=async()=>{
-      try{
-        pendingFoundEmbedding=await embeddingFromElement(el);
-        $('#foundImageStatus').textContent='Visual fingerprint ready';
-        $('#foundImageHint').textContent='Ready to compare against active lost-item cases.';
-        toast('Found-item image analyzed');
-      }catch(err){
-        console.error(err);
-        $('#foundImageStatus').textContent='Could not analyze image';
-        $('#foundImageHint').textContent='Try another clear photo.';
-      }
-    };
-    el.src=url;
+    try{
+      const el=await optimizedCanvasFromFile(file,640);
+      pendingFoundEmbedding=await embeddingFromElement(el);
+      $('#foundImageStatus').textContent='Visual fingerprint ready';
+      $('#foundImageHint').textContent='Ready to compare against active lost-item cases.';
+      toast('Found-item image analyzed');
+    }catch(err){
+      console.error(err);
+      pendingFoundEmbedding=null;
+      $('#foundImageStatus').textContent='Could not analyze image';
+      $('#foundImageHint').textContent=err.message||'Try another clear photo.';
+    }
   });
 }
 
