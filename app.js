@@ -167,14 +167,24 @@ function renderCases(){
 
 $('#caseForm').addEventListener('submit',async e=>{
   e.preventDefault();
-  const c={id:caseId(),category:$('#itemCategory').value,color:$('#itemColor').value,details:$('#itemDetails').value.trim(),location:$('#lastSeen').value.trim(),created:Date.now(),sightings:[],status:'active',reference_embedding:pendingReferenceEmbedding};
-  const arr=storedCases(); arr.push(c); saveCases(arr); updateTarget(); renderCases(); location.hash='scanner';
-  setAgent('SYNCING','Saving this case securely to the cloud backend.',['Local fallback saved','Cloud sync in progress']);
+  const ownershipQuestion=$('#ownershipQuestion')?.value?.trim()||'';
+  const ownershipAnswer=$('#ownershipAnswer')?.value?.trim()||'';
+  if((ownershipQuestion&&!ownershipAnswer)||(!ownershipQuestion&&ownershipAnswer)){toast('Add both the private proof question and answer');return;}
+  if(ownershipQuestion&&ownershipAnswer.length<2){toast('Private proof answer is too short');return;}
+  const wantsNotifications=$('#enableMatchNotifications')?.checked;
+  if(wantsNotifications&&'Notification' in window&&Notification.permission==='default'){
+    Notification.requestPermission().then(p=>toast(p==='granted'?'Match notifications enabled':'In-app alerts will still work'));
+  }
+  const c={id:caseId(),category:$('#itemCategory').value,color:$('#itemColor').value,details:$('#itemDetails').value.trim(),location:$('#lastSeen').value.trim(),created:Date.now(),sightings:[],status:'active',reference_embedding:pendingReferenceEmbedding,has_private_proof:!!(ownershipQuestion&&ownershipAnswer)};
+  const arr=storedCases(); arr.push(c); saveCases(arr); updateTarget(); renderCases();
+  setAgent('SYNCING','Saving this case securely to the cloud backend.',['Local fallback saved','Private proof protected','Cloud sync in progress']);
   try{
-    const out=await cloudCall({action:'create_case',case:{case_code:c.id,category:c.category,color:c.color,details:c.details,last_seen_location:c.location,reference_embedding:c.reference_embedding}});
+    const out=await cloudCall({action:'create_case',case:{case_code:c.id,category:c.category,color:c.color,details:c.details,last_seen_location:c.location,reference_embedding:c.reference_embedding,ownership_question:ownershipQuestion,ownership_answer:ownershipAnswer}});
     const latest=storedCases(); const idx=latest.findIndex(x=>x.id===c.id); if(idx>=0){latest[idx].cloud_id=out.case.id; latest[idx].status=out.case.status; saveCases(latest);} refreshDashboardStats();
-    toast('Case saved to Supabase cloud'); updateTarget(); renderCases();
-    setAgent('READY','Case is saved in the cloud and ready for scanning.',['Cloud case created','Local fallback retained','Target loaded']);
+    if($('#ownershipAnswer')) $('#ownershipAnswer').value='';
+    toast('Case saved · private ownership proof secured'); updateTarget(); renderCases();
+    setAgent('READY','Case is saved in the cloud and ready for scanning.',['Cloud case created','Private proof secured','Match alerts active']);
+    if(document.body.dataset.page==='register') setTimeout(()=>{location.href='/scanner.html';},650);
   }catch(err){
     console.error(err); toast('Saved locally. Cloud sync will retry later.');
     setAgent('OFFLINE READY','Cloud sync failed, but the case is safe on this device and scanning still works.',['Local fallback active','Retry on refresh']);
