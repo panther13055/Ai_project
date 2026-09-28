@@ -3,6 +3,47 @@ const esc=(v='')=>String(v).replace(/[&<>'"]/g,ch=>({"&":"&amp;","<":"&lt;",">":
 const fmtScore=v=>v===null||v===undefined?'N/A':Math.round(Number(v))+'%';
 const handoverTimers=new Map();
 const seenKey='orbitfind_seen_match_alerts';
+const baseTitle=document.title;
+let activeVerificationAlert=null;
+
+function installOwnershipRegistration(){
+  const grid=document.querySelector('#caseForm .field-grid');
+  if(!grid||document.querySelector('#ownershipProofBlock'))return;
+  const block=document.createElement('div');
+  block.id='ownershipProofBlock';
+  block.className='field field-wide ownership-proof-card';
+  block.innerHTML=
+    '<div class="ownership-proof-head"><div><span>PRIVATE OWNERSHIP PROOF</span><strong>Something only the real owner should know</strong></div><b>Encrypted check</b></div>'+
+    '<p>This answer is never shown to the finder. OrbitFind stores only a protected hash and uses it when a possible match is found.</p>'+
+    '<div class="ownership-proof-grid">'+
+      '<label><span>Private verification question</span><input id="ownershipQuestion" maxlength="180" autocomplete="off" placeholder="e.g. What is attached inside the front pocket?" required /></label>'+
+      '<label><span>Secret answer</span><input id="ownershipAnswer" maxlength="180" autocomplete="off" placeholder="e.g. small red keychain" required /></label>'+
+    '</div>'+
+    '<label class="notify-opt"><input id="enableMatchNotifications" type="checkbox" checked /><span><strong>Notify this device when a possible match is found</strong><small>Browser notification when OrbitFind is open or active, plus in-app match alerts.</small></span></label>';
+  const lastSeen=document.querySelector('#lastSeen')?.closest('.field');
+  if(lastSeen) grid.insertBefore(block,lastSeen); else grid.appendChild(block);
+}
+
+function installOwnershipModal(){
+  if(document.querySelector('#ownershipVerifyModal'))return;
+  const m=document.createElement('div');
+  m.id='ownershipVerifyModal';
+  m.className='ownership-modal';
+  m.setAttribute('aria-hidden','true');
+  m.innerHTML='<div class="ownership-modal-card" role="dialog" aria-modal="true" aria-labelledby="ownershipVerifyTitle">'+
+    '<button class="ownership-modal-close" type="button" data-close-ownership>×</button>'+
+    '<div class="ownership-modal-icon">✓</div>'+
+    '<small>OWNER VERIFICATION</small>'+
+    '<h3 id="ownershipVerifyTitle">Prove this item is yours</h3>'+
+    '<p id="ownershipVerifyQuestion">Answer the private question you created when registering the item.</p>'+
+    '<form id="ownershipVerifyForm">'+
+      '<input id="ownershipVerifyAnswer" autocomplete="off" placeholder="Enter your private answer" required />'+
+      '<button class="case-mini-btn primary" type="submit">Verify ownership</button>'+
+    '</form>'+
+    '<div id="ownershipVerifyStatus" class="ownership-verify-status">Your answer is checked securely on the backend and is never shown to the finder.</div>'+
+  '</div>';
+  document.body.appendChild(m);
+}
 
 function scoreRow(label,value){
   const n=value===null||value===undefined?0:Math.max(0,Math.min(100,Number(value)||0));
@@ -29,7 +70,7 @@ function installMatchRenderer(){
           scoreRow('Location',b.location)+
           scoreRow('Description',b.description)+
         '</div><small>Candidate score combines multiple signals. Final ownership still requires human verification.</small></details>'+
-        '<div class="secure-handover-box"><div><strong>Private handover</strong><small>No phone number or email is shared between finder and owner.</small></div>'+
+        '<div class="secure-handover-box"><div><strong>Private handover</strong><small>The registered owner must pass their private proof before Security Desk approval. No contact details are exposed.</small></div>'+
         '<button class="case-mini-btn primary" data-secure-handover="'+esc(m.case_id)+'" data-score="'+esc(m.score)+'" data-case-code="'+esc(m.case_code)+'">Request secure handover</button>'+
         '<div class="handover-status" data-handover-status="'+esc(m.case_id)+'"></div></div>'+
       '</article>';
@@ -74,6 +115,22 @@ function startHandoverPolling(requestId,caseId){
 }
 
 document.addEventListener('click',async e=>{
+  const verifyBtn=e.target.closest?.('[data-verify-ownership]');
+  if(verifyBtn){
+    const alert=lastAlerts.find(a=>a.id===verifyBtn.dataset.verifyOwnership);
+    if(!alert)return;
+    activeVerificationAlert=alert;
+    document.querySelector('#ownershipVerifyQuestion').textContent=alert.case?.ownership_question||'Answer your private ownership question.';
+    document.querySelector('#ownershipVerifyAnswer').value='';
+    document.querySelector('#ownershipVerifyStatus').textContent='Your answer is checked securely on the backend and is never shown to the finder.';
+    const modal=document.querySelector('#ownershipVerifyModal');
+    modal?.classList.add('open');modal?.setAttribute('aria-hidden','false');
+    setTimeout(()=>document.querySelector('#ownershipVerifyAnswer')?.focus(),80);
+    return;
+  }
+  if(e.target.closest?.('[data-close-ownership]')){
+    const modal=document.querySelector('#ownershipVerifyModal');modal?.classList.remove('open');modal?.setAttribute('aria-hidden','true');activeVerificationAlert=null;return;
+  }
   const btn=e.target.closest?.('[data-secure-handover]');
   if(btn){
     const report=window.orbitLastFoundReport;
@@ -107,6 +164,8 @@ document.addEventListener('click',async e=>{
 });
 
 function ensureAlertUI(){
+  installOwnershipRegistration();
+  installOwnershipModal();
   const top=document.querySelector('.top-actions');
   if(top&&!document.querySelector('#matchAlertButton')){
     const b=document.createElement('button');b.id='matchAlertButton';b.className='match-alert-button';b.type='button';b.innerHTML='Alerts <span id="matchAlertCount">0</span>';top.insertBefore(b,top.querySelector('.admin-entry')||top.lastElementChild);
@@ -133,8 +192,22 @@ async function pollAlerts(){
     const seen=getSeen();
     const unread=lastAlerts.filter(a=>a.status==='unread');
     document.querySelector('#matchAlertCount').textContent=String(unread.length);
+    document.title=unread.length?'('+unread.length+') OrbitFind · Match found':baseTitle;
     const list=document.querySelector('#matchAlertList');
-    if(list) list.innerHTML=lastAlerts.length?lastAlerts.map(a=>'<article class="live-alert '+(a.status==='unread'?'unread':'')+'" data-alert-id="'+esc(a.id)+'"><div><strong>'+esc(a.case?.case_code||'Case')+' · '+esc(a.score)+'%</strong><span>'+esc(pretty(a.case?.color||''))+' '+esc(pretty(a.case?.category||''))+'</span></div><small>Found near '+esc(a.found_location||'campus')+' <b class="alert-distance" data-alert-distance="'+esc(a.id)+'"></b></small></article>').join(''):'<div class="empty-cases">No match alerts yet.</div>';
+    if(list) list.innerHTML=lastAlerts.length?lastAlerts.map(a=>{
+      const proof=a.ownership_status||'pending';
+      const hasProof=!!a.case?.has_private_proof;
+      let proofUI='';
+      if(hasProof&&proof==='verified') proofUI='<div class="owner-proof-state verified">✓ OWNER VERIFIED</div>';
+      else if(hasProof&&proof==='locked') proofUI='<div class="owner-proof-state locked">Verification locked · Security Desk manual check required</div>';
+      else if(hasProof) proofUI='<button class="verify-owner-btn" type="button" data-verify-ownership="'+esc(a.id)+'">Verify ownership</button>';
+      else proofUI='<div class="owner-proof-state manual">Older case · Security Desk will verify manually</div>';
+      return '<article class="live-alert '+(a.status==='unread'?'unread':'')+'" data-alert-id="'+esc(a.id)+'">'+
+        '<div class="live-alert-main"><div><strong>'+esc(a.case?.case_code||'Case')+' · '+esc(a.score)+'%</strong><span>'+esc(pretty(a.case?.color||''))+' '+esc(pretty(a.case?.category||''))+'</span></div><em>'+esc(proof==='verified'?'VERIFIED':'MATCH FOUND')+'</em></div>'+
+        '<small>Found near '+esc(a.found_location||'campus')+' <b class="alert-distance" data-alert-distance="'+esc(a.id)+'"></b></small>'+
+        proofUI+
+      '</article>';
+    }).join(''):'<div class="empty-cases">No match alerts yet.</div>';
     unread.forEach(a=>{
       if(seen.has(a.id))return;
       seen.add(a.id);
@@ -158,11 +231,34 @@ function setFallbackState(cloudOk){
   if(!cloudOk){strip.textContent='Cloud sync temporarily unavailable · Local fallback keeps core case data available.';strip.classList.add('show');return;}
   strip.classList.remove('show');
 }
+document.addEventListener('submit',async e=>{
+  if(e.target?.id!=='ownershipVerifyForm')return;
+  e.preventDefault();
+  if(!activeVerificationAlert)return;
+  const answer=document.querySelector('#ownershipVerifyAnswer')?.value?.trim()||'';
+  const status=document.querySelector('#ownershipVerifyStatus');
+  const button=e.target.querySelector('button[type="submit"]');
+  if(!answer){if(status)status.textContent='Enter the private answer you set during registration.';return;}
+  button.disabled=true;button.textContent='Checking…';
+  try{
+    const out=await cloudCall({action:'verify_ownership_proof',alert_id:activeVerificationAlert.id,answer});
+    if(out.verified){
+      if(status){status.className='ownership-verify-status success';status.textContent='✓ Ownership verified. Security Desk can now approve the secure handover.';}
+      toast('Ownership verified successfully');
+      setTimeout(()=>{
+        const modal=document.querySelector('#ownershipVerifyModal');modal?.classList.remove('open');modal?.setAttribute('aria-hidden','true');activeVerificationAlert=null;pollAlerts();
+      },900);
+    }
+  }catch(err){
+    if(status){status.className='ownership-verify-status error';status.textContent=err.message||'Private proof did not match. Try again carefully.';}
+  }finally{button.disabled=false;button.textContent='Verify ownership';}
+});
+
 window.addEventListener('offline',()=>setFallbackState(false));
 window.addEventListener('online',()=>{setFallbackState(true);pollAlerts();});
 
 ensureAlertUI();
 installMatchRenderer();
 pollAlerts();
-setInterval(pollAlerts,10000);
+setInterval(pollAlerts,5000);
 })();
