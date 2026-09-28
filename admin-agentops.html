@@ -122,8 +122,22 @@ if(sessionStorage.getItem('orbitfind_admin_ok')!=='1'){location.replace('/#admin
     <section id="queue" class="panel table-panel">
       <div class="panel-head table-head"><div><small>RECOVERY QUEUE</small><h2>Live case processing</h2></div><input id="caseSearch" placeholder="Search case, item, location…"></div>
       <div class="table-wrap">
-        <table><thead><tr><th>Case</th><th>Item</th><th>Stage</th><th>Last score</th><th>Location</th><th>Signals</th></tr></thead><tbody id="caseRows"></tbody></table>
+        <table><thead><tr><th>Case</th><th>Item</th><th>Stage</th><th>Last score</th><th>Location</th><th>Signals</th><th>Action</th></tr></thead><tbody id="caseRows"></tbody></table>
       </div>
+    </section>
+
+
+    <section id="foundReportsAdmin" class="panel table-panel">
+      <div class="panel-head table-head"><div><small>FOUND INVENTORY</small><h2>Found item reports</h2></div><span class="guard-pill" id="foundReportCount">0 reports</span></div>
+      <div class="table-wrap">
+        <table><thead><tr><th>Item</th><th>Location</th><th>Top score</th><th>Submitted</th><th>Action</th></tr></thead><tbody id="foundRows"></tbody></table>
+      </div>
+    </section>
+
+    <section class="panel danger-panel">
+      <div class="panel-head"><div><small>ADMIN DATA CONTROLS</small><h2>Prototype cleanup</h2></div><span class="danger-badge">ADMIN ONLY</span></div>
+      <p>Use individual delete buttons for mistakes. “Clear demo data” removes all prototype cases, sightings, found reports, alerts, claims and handover requests from the cloud database.</p>
+      <button id="clearDemoData" class="danger-button" type="button">Clear all demo data</button>
     </section>
 
     <section id="handoverDesk" class="panel claims-panel">
