@@ -117,3 +117,15 @@ body[data-page="cases"] [data-nav="cases"]{color:#eef5ff!important;background:rg
   .nav{z-index:1310!important}
   .icon-btn{z-index:1315!important}
 }
+
+
+/* Hard stacking fix for mobile navigation */
+@media(max-width:980px){
+  .topbar{position:sticky!important;z-index:10000!important}
+  .nav{z-index:10020!important}
+  .icon-btn{z-index:10030!important}
+  body.nav-open:after{
+    z-index:9990!important;
+    pointer-events:none!important;
+  }
+}
